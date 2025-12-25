@@ -1,0 +1,213 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # Database Services
+  # ============================================
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: pms-postgres
+    environment:
+      POSTGRES_DB: pms_db
+      POSTGRES_USER: pms_user
+      POSTGRES_PASSWORD: pms_password
+      POSTGRES_MULTIPLE_DATABASES: auth,project,task,chat,risk,report
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    networks:
+      - pms-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pms_user -d pms_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # Cache & Session Store
+  # ============================================
+
+  redis:
+    image: redis:7-alpine
+    container_name: pms-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - pms-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # Backend Service (Modular Monolith)
+  # ============================================
+
+  backend:
+    build:
+      context: ./PMS_IC_BackEnd_v1.2
+      dockerfile: Dockerfile
+    container_name: pms-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pms_db
+      SPRING_DATASOURCE_USERNAME: pms_user
+      SPRING_DATASOURCE_PASSWORD: pms_password
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      AI_TEAM_API_URL: http://ai-service:8000
+      JWT_SECRET: your-secret-key-change-in-production
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - pms-network
+    volumes:
+      - backend_cache:/root/.m2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================
+  # Frontend Service
+  # ============================================
+
+  frontend:
+    build:
+      context: ./PMS_IC_FrontEnd_v1.2
+      dockerfile: Dockerfile.dev
+    container_name: pms-frontend
+    environment:
+      VITE_API_URL: http://localhost:8080/api
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./PMS_IC_FrontEnd_v1.2:/app
+      - /app/node_modules
+    networks:
+      - pms-network
+    depends_on:
+      - backend
+
+  # ============================================
+  # AI Service (Mock - AI 팀 개발 전까지)
+  # ============================================
+
+  ai-service:
+    image: mockserver/mockserver:latest
+    container_name: pms-ai-service-mock
+    ports:
+      - "8000:1080"
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/ai-mock.json
+    volumes:
+      - ./docker/mockserver/ai-mock.json:/config/ai-mock.json
+    networks:
+      - pms-network
+
+  # ============================================
+  # Development Tools
+  # ============================================
+
+  # PgAdmin - PostgreSQL GUI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pms-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pms.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - pms-network
+    depends_on:
+      - postgres
+
+  # Redis Commander - Redis GUI
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: pms-redis-commander
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    networks:
+      - pms-network
+    depends_on:
+      - redis
+
+  # ============================================
+  # Monitoring (Optional - Production에서 필수)
+  # ============================================
+
+  # Prometheus - 메트릭 수집
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: pms-prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+  #     - prometheus_data:/prometheus
+  #   networks:
+  #     - pms-network
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+
+  # Grafana - 메트릭 시각화
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: pms-grafana
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     GF_SECURITY_ADMIN_PASSWORD: admin
+  #   volumes:
+  #     - grafana_data:/var/lib/grafana
+  #   networks:
+  #     - pms-network
+  #   depends_on:
+  #     - prometheus
+
+# ============================================
+# Networks
+# ============================================
+
+networks:
+  pms-network:
+    driver: bridge
+
+# ============================================
+# Volumes
+# ============================================
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  backend_cache:
+    driver: local
+  # prometheus_data:
+  #   driver: local
+  # grafana_data:
+  #   driver: local

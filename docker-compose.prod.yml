@@ -1,0 +1,57 @@
+# docker-compose.prod.yml
+# 프로덕션 환경 설정
+# 사용: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+
+version: '3.8'
+
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-in-production}
+    volumes:
+      - /var/lib/pms/postgres:/var/lib/postgresql/data
+    restart: always
+
+  redis:
+    restart: always
+
+  backend:
+    build:
+      context: ./PMS_IC_BackEnd_v1.2
+      dockerfile: Dockerfile.prod
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-change-me-in-production}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      SPRING_JPA_SHOW_SQL: 'false'
+      LOGGING_LEVEL_ROOT: WARN
+      LOGGING_LEVEL_COM_INSURETECH_PMS: INFO
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  frontend:
+    build:
+      context: ./PMS_IC_FrontEnd_v1.2
+      dockerfile: Dockerfile.prod
+    restart: always
+
+  # 프로덕션에서는 Nginx 리버스 프록시 추가
+  nginx:
+    image: nginx:alpine
+    container_name: pms-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - pms-network
+    restart: always

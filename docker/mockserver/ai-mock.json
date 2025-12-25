@@ -1,0 +1,40 @@
+[
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/api/chat"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "reply": "안녕하세요! PMS AI 어시스턴트입니다. 현재 Mock 모드로 동작 중입니다. AI 팀의 실제 서비스가 연동되면 실시간 답변이 제공됩니다.",
+        "confidence": 0.95,
+        "suggestions": [
+          "프로젝트 진행률 확인",
+          "할당된 태스크 조회",
+          "이번 스프린트 목표 확인"
+        ]
+      },
+      "delay": {
+        "timeUnit": "MILLISECONDS",
+        "value": 500
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/health"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": {
+        "status": "healthy",
+        "service": "AI Service (Mock)"
+      }
+    }
+  }
+]
