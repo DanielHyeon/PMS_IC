@@ -474,6 +474,31 @@ export class ApiService {
       body: JSON.stringify({ role, permissionId, granted }),
     }, { message: 'Permission updated' });
   }
+
+  async sendChatMessage(params: { sessionId?: string | null; message: string }) {
+    const response = await this.fetchWithFallback('/chat/message', {
+      method: 'POST',
+      body: JSON.stringify({
+        sessionId: params.sessionId ?? null,
+        message: params.message,
+      }),
+    }, {
+      sessionId: params.sessionId ?? 'mock-session',
+      reply: '안녕하세요! PMS AI 어시스턴트입니다. 현재 Mock 모드로 동작 중입니다.',
+      confidence: 0.95,
+      suggestions: [
+        '프로젝트 진행률 확인',
+        '할당된 태스크 조회',
+        '이번 스프린트 목표 확인',
+      ],
+    });
+
+    if (response && typeof response === 'object' && 'data' in response) {
+      return (response as any).data;
+    }
+
+    return response as any;
+  }
 }
 
 export const apiService = new ApiService();

@@ -63,7 +63,9 @@ jwt:
 # AI Service
 ai:
   service:
-    url: ${AI_TEAM_API_URL:http://localhost:8000}
+    url: ${AI_TEAM_API_URL:http://localhost:11434}
+    mock-url: ${AI_TEAM_MOCK_URL:http://localhost:8000}
+    model: ${AI_TEAM_MODEL:llama3}
     timeout: 30000
     retry:
       max-attempts: 3
