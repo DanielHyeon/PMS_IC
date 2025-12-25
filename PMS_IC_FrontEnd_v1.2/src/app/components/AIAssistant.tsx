@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Send, Bot, Sparkles, TrendingUp, FileText, AlertTriangle } from 'lucide-react';
 import { UserRole } from '../App';
+import { apiService } from '../../services/api';
 
 interface Message {
   id: number;
@@ -26,6 +27,7 @@ export default function AIAssistant({ onClose, userRole }: { onClose: () => void
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const suggestedPrompts: SuggestedPrompt[] = [
     {
@@ -50,120 +52,7 @@ export default function AIAssistant({ onClose, userRole }: { onClose: () => void
     },
   ];
 
-  const simulateAIResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
-
-    if (lowerMessage.includes('wbs') || lowerMessage.includes('작업')) {
-      return `AI 모델링 단계를 위한 WBS를 생성했습니다:
-
-**3단계: AI 모델링 및 학습**
-
-1. **데이터 정제 및 증강** (5일, 담당: 데이터팀)
-   - 비식별화된 데이터 품질 검증
-   - 데이터 증강(Data Augmentation) 기법 적용
-   - Train/Validation/Test 세트 분리
-
-2. **특징 공학 (Feature Engineering)** (3일, 담당: AI팀)
-   - 영수증 이미지 전처리 파이프라인 구축
-   - 텍스트 특징 추출 알고리즘 개발
-   - 메타데이터 특징 생성
-
-3. **OCR 모델 학습 및 튜닝** (10일, 담당: AI팀)
-   - 베이스라인 모델 학습 (Tesseract, EasyOCR 비교)
-   - 커스텀 모델 파인튜닝 (한글 진단서 특화)
-   - 하이퍼파라미터 최적화 (Learning Rate, Batch Size 등)
-
-4. **분류 모델 개발** (7일, 담당: AI팀)
-   - 진료 항목 분류 모델 학습 (BERT 기반)
-   - 약관 매칭 알고리즘 구현
-   - Ensemble 기법 적용
-
-5. **성능 평가 및 보고** (3일, 담당: PM + AI팀)
-   - Accuracy, Precision, Recall 측정
-   - 혼동 행렬(Confusion Matrix) 분석
-   - 성능 개선 포인트 도출
-
-**예상 총 공수:** 28 Story Points
-**리스크:** 데이터 품질 이슈, 특정 양식 인식률 저하`;
-    }
-
-    if (lowerMessage.includes('리스크') || lowerMessage.includes('위험')) {
-      return `**현재 프로젝트 주요 리스크 분석 결과:**
-
-🔴 **High Risk (즉시 조치 필요)**
-1. **OCR 인식률 목표 미달 위험** (발생 확률: 75%)
-   - 현재 93.5%, 목표 95%
-   - 특정 병원(서울대병원, 세브란스) 진단서 양식 인식률 85% 수준
-   - **권장 조치:** 해당 병원 데이터 500건 추가 확보 및 파인튜닝
-
-🟡 **Medium Risk (모니터링 필요)**
-2. **데이터 라벨링 지연** (발생 확률: 60%)
-   - 현업 검증자 부족으로 라벨링 속도 저하
-   - **권장 조치:** 외주 라벨링 업체 활용 검토
-
-3. **레거시 시스템 연동 복잡도** (발생 확률: 50%)
-   - 기존 심사 시스템 API 문서 불완전
-   - **권장 조치:** IT 인프라팀과 사전 기술 검토 회의
-
-🟢 **Low Risk (계속 관찰)**
-4. **팀원 교체 가능성** (발생 확률: 20%)
-   - 핵심 개발자 1명 타 프로젝트 배정 가능성
-   - **권장 조치:** 지식 이전 문서화 강화`;
-    }
-
-    if (lowerMessage.includes('보고서') || lowerMessage.includes('요약') || lowerMessage.includes('진행')) {
-      return `**금주 프로젝트 진행 현황 요약** (2025년 8월 11일 ~ 8월 15일)
-
-📊 **전체 진행률:** 62% (계획 대비 +2%p)
-
-✅ **주요 성과:**
-- OCR 모델 v2.1 학습 완료 (인식률 93.5% → 94.2% 향상)
-- 데이터 파이프라인 성능 최적화 (처리 속도 30% 개선)
-- 모델 성능 모니터링 대시보드 구축 완료
-
-⚠️ **주요 이슈:**
-- 특정 병원 진단서 인식률 저하 문제 지속 (85% 수준)
-- 데이터 라벨링 일정 2일 지연
-
-📈 **다음 주 계획:**
-- 데이터 증강 기법 적용 (Rotation, Noise 추가 등)
-- 하이퍼파라미터 튜닝 실험 (Grid Search)
-- 현업 검증 피드백 반영
-
-👥 **팀 현황:** 5명 (개발 3, QA 1, PM 1)`;
-    }
-
-    if (lowerMessage.includes('달성') || lowerMessage.includes('예측') || lowerMessage.includes('스프린트')) {
-      return `**스프린트 목표 달성 예측 분석:**
-
-현재 Sprint 5 진행 상황 (Day 10 / 14일):
-- **남은 작업:** 8 Story Points
-- **남은 기간:** 4일
-- **현재 Velocity:** 40 SP/Sprint (최근 3개 스프린트 평균)
-- **일일 평균 소화량:** 약 3 SP/Day
-
-📊 **예측 결과:**
-- **목표 달성 확률:** 85% ✅
-- **예상 완료일:** 8월 18일 (마감일 준수 가능)
-
-💡 **AI 권장 사항:**
-1. 현재 속도 유지 시 목표 달성 가능
-2. 긴급 이슈 1건(진단서 데이터 수집)이 병목 요인
-3. 해당 작업에 추가 리소스 투입 권장 (박민수 → 이영희 지원)
-
-⚡ **위험 요소:**
-- 코드 리뷰 대기 중인 작업 2건 → 신속한 리뷰 필요`;
-    }
-
-    return `말씀하신 내용에 대해 분석 중입니다. 프로젝트 데이터를 기반으로 더 구체적인 질문을 주시면 도움을 드리겠습니다. 
-
-예를 들어:
-- "3단계 모델링을 위한 WBS 생성해줘"
-- "현재 프로젝트의 리스크를 분석해줘"
-- "이번 주 진행 상황을 요약해줘"`;
-  };
-
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
 
     const userMessage: Message = {
@@ -177,17 +66,34 @@ export default function AIAssistant({ onClose, userRole }: { onClose: () => void
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const response = await apiService.sendChatMessage({
+        sessionId,
+        message: userMessage.content,
+      });
       const aiResponse: Message = {
         id: messages.length + 2,
         role: 'assistant',
-        content: simulateAIResponse(input),
+        content: response?.reply ?? '답변을 생성하지 못했습니다. 잠시 후 다시 시도해주세요.',
         timestamp: new Date(),
       };
+      if (response?.sessionId) {
+        setSessionId(response.sessionId);
+      }
       setMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: messages.length + 2,
+          role: 'assistant',
+          content: '현재 AI 서비스와 통신할 수 없습니다. 잠시 후 다시 시도해주세요.',
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleSuggestedPrompt = (prompt: string) => {

@@ -62,7 +62,9 @@ services:
       SPRING_DATASOURCE_PASSWORD: pms_password
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
-      AI_TEAM_API_URL: http://ai-service:8000
+      AI_TEAM_API_URL: http://ollama:11434
+      AI_TEAM_MOCK_URL: http://ai-service:1080
+      AI_TEAM_MODEL: llama3
       JWT_SECRET: your-secret-key-change-in-production
     ports:
       - "8080:8080"
@@ -116,6 +118,20 @@ services:
       MOCKSERVER_INITIALIZATION_JSON_PATH: /config/ai-mock.json
     volumes:
       - ./docker/mockserver/ai-mock.json:/config/ai-mock.json
+    networks:
+      - pms-network
+
+  # ============================================
+  # Local LLM Service (Ollama - planned)
+  # ============================================
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: pms-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
     networks:
       - pms-network
 
@@ -206,6 +222,8 @@ volumes:
   pgadmin_data:
     driver: local
   backend_cache:
+    driver: local
+  ollama_data:
     driver: local
   # prometheus_data:
   #   driver: local
