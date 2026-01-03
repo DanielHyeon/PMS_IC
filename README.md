@@ -1,9 +1,147 @@
-…or create a new repository on the command line
-echo "# test" >> README.md
-git init
-git add README.md
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/DanielHyeon/PMS_IC.git
-git push -u origin main
------------------------
+# PMS_IC - AI-Powered Project Management System
+
+InsureTech 프로젝트 관리 시스템 with 로컬 LLM 챗봇
+
+## 🚀 빠른 시작
+
+### 1. 전체 시스템 실행
+
+```bash
+docker-compose up -d
+```
+
+### 2. 서비스 접속
+
+- **프론트엔드**: http://localhost:5173
+- **백엔드 API**: http://localhost:8080
+- **LLM 서비스**: http://localhost:8000
+- **ChromaDB (RAG)**: http://localhost:8001
+- **API 문서**: http://localhost:8080/swagger-ui.html
+
+### 3. 로그인
+
+다음 중 원하는 계정으로 로그인 (모두 AI 챗봇 사용 가능):
+
+- **관리자**: admin@insure.com / admin123
+- **개발자**: dev@insure.com / admin123 (추천)
+- **PM**: pm@insure.com / admin123
+
+## 📚 문서
+
+### 🎯 빠른 시작
+- **[프론트엔드 테스트 시작하기](./프론트엔드_테스트_시작하기.md)** ⭐ 지금 바로 AI 챗봇 테스트!
+
+### 📖 상세 가이드
+- **[RAG 시스템 가이드](./RAG_시스템_가이드.md)** ⭐ NEW! 문서 기반 지능형 답변
+- **[프론트엔드 챗봇 테스트 가이드](./프론트엔드_챗봇_테스트_가이드.md)** - UI 사용법, 문제 해결
+- **[LLM 연동 가이드](./LLM_연동_가이드.md)** - 백엔드 LLM 서비스 설정 및 테스트
+- **[실행 가이드](./실행가이드.md)** - 상세 실행 방법
+- **[Docker 가이드](./README_DOCKER.md)** - Docker 환경 설정
+
+## 🏗️ 아키텍처
+
+```
+프론트엔드 (React + TypeScript) :5173
+    ↓ HTTP
+백엔드 (Spring Boot) :8080
+    ├─ 산출물 업로드 → 자동 RAG 인덱싱
+    └─ 채팅 → RAG 검색 → LLM
+        ↓ HTTP
+LLM 서비스 (Flask + llama-cpp-python) :8000
+    ├─ RAG (ChromaDB + SentenceTransformer)
+    └─ Gemma 3 12B 모델
+        ↓
+ChromaDB :8001 (벡터 데이터베이스)
+```
+
+## ✨ 주요 기능
+
+- 🤖 **AI 챗봇**: 로컬 LLM 기반 프로젝트 관리 어시스턴트
+- 📊 **프로젝트 대시보드**: 실시간 프로젝트 현황 모니터링
+- 📅 **일정 관리**: WBS, 간트 차트, 칸반 보드
+- 👥 **팀 협업**: 역할 기반 접근 제어
+- 🔒 **폐쇄망 지원**: 모든 데이터 온프레미스 처리
+
+## 🧪 AI 챗봇 테스트
+
+### 프론트엔드에서 테스트
+
+1. http://localhost:5173 접속
+2. admin@insure.com / admin123 로그인
+3. 우측 하단 AI 어시스턴트 아이콘 클릭
+4. 메시지 입력 및 응답 확인
+
+상세: [프론트엔드_챗봇_테스트_가이드.md](./프론트엔드_챗봇_테스트_가이드.md)
+
+### API로 직접 테스트
+
+```bash
+# LLM 서비스 직접 호출
+curl -X POST http://localhost:8000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"안녕하세요","context":[]}'
+
+# 백엔드 API 호출
+curl -X POST http://localhost:8080/api/chat/message \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"sessionId":null,"message":"프로젝트 현황 알려줘"}'
+```
+
+## 📦 서비스 구성
+
+| 서비스 | 포트 | 설명 |
+|--------|------|------|
+| Frontend | 5173 | React 프론트엔드 |
+| Backend | 8080 | Spring Boot API |
+| LLM Service | 8000 | Flask 로컬 LLM |
+| PostgreSQL | 5433 | 데이터베이스 |
+| Redis | 6379 | 캐시/세션 |
+| PgAdmin | 5050 | DB 관리 도구 |
+
+## 🛠️ 개발 환경
+
+- **프론트엔드**: React 18, TypeScript, Vite, TailwindCSS
+- **백엔드**: Spring Boot 3, Java 17, PostgreSQL, Redis
+- **LLM**: Flask, llama-cpp-python 0.3.16, GGUF 모델
+
+## 📝 테스트 계정
+
+모든 계정이 **AI 챗봇 사용 가능** ✅
+
+| 역할 | 이메일 | 비밀번호 | AI 챗봇 |
+|------|--------|----------|---------|
+| 관리자 | admin@insure.com | admin123 | ✅ |
+| PMO | pmo@insure.com | admin123 | ✅ |
+| PM | pm@insure.com | admin123 | ✅ |
+| **개발자** | **dev@insure.com** | admin123 | ✅ |
+| QA | qa@insure.com | admin123 | ✅ |
+
+> **추천**: `dev@insure.com` - 개발자 관점에서 실용적인 테스트 가능
+
+## 🔧 문제 해결
+
+### 서비스가 시작되지 않는 경우
+
+```bash
+docker-compose down -v
+docker-compose up -d
+```
+
+### AI 챗봇이 응답하지 않는 경우
+
+```bash
+# 로그 확인
+docker-compose logs llm-service
+docker-compose logs backend
+
+# 서비스 재시작
+docker-compose restart llm-service backend
+```
+
+상세: [LLM_연동_가이드.md - 문제 해결](./LLM_연동_가이드.md#-문제-해결)
+
+## 📞 지원
+
+- GitHub Issues: https://github.com/DanielHyeon/PMS_IC/issues
+- 문서: 프로젝트 루트의 *.md 파일 참조

@@ -62,7 +62,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: pms_password
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
-      AI_TEAM_API_URL: http://ollama:11434
+      AI_TEAM_API_URL: http://llm-service:8000
       AI_TEAM_MOCK_URL: http://ai-service:1080
       AI_TEAM_MODEL: llama3
       JWT_SECRET: your-secret-key-change-in-production
@@ -73,6 +73,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      llm-service:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
     networks:
       - pms-network
     volumes:
@@ -106,14 +110,62 @@ services:
       - backend
 
   # ============================================
-  # AI Service (Mock - AI 팀 개발 전까지)
+  # Local LLM Service (Flask + llama-cpp-python)
+  # ============================================
+
+  llm-service:
+    build:
+      context: ./llm-service
+      dockerfile: Dockerfile
+    container_name: pms-llm-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+    networks:
+      - pms-network
+    environment:
+      MODEL_PATH: /app/models/google.gemma-3-12b-pt.Q5_K_M.gguf
+      PORT: 8000
+      MAX_TOKENS: 128
+      TEMPERATURE: 0.7
+      TOP_P: 0.9
+      CHROMA_HOST: chromadb
+      CHROMA_PORT: 8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ============================================
+  # Vector Database (ChromaDB for RAG)
+  # ============================================
+
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: pms-chromadb
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadb_data:/data
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    networks:
+      - pms-network
+    # healthcheck removed - chromadb image doesn't include curl
+
+  # ============================================
+  # AI Service (Mock - Fallback용)
   # ============================================
 
   ai-service:
     image: mockserver/mockserver:latest
     container_name: pms-ai-service-mock
     ports:
-      - "8000:1080"
+      - "1080:1080"
     environment:
       MOCKSERVER_INITIALIZATION_JSON_PATH: /config/ai-mock.json
     volumes:
@@ -122,18 +174,18 @@ services:
       - pms-network
 
   # ============================================
-  # Local LLM Service (Ollama - planned)
+  # Local LLM Service (Ollama - Optional)
   # ============================================
 
-  ollama:
-    image: ollama/ollama:latest
-    container_name: pms-ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    networks:
-      - pms-network
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: pms-ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   networks:
+  #     - pms-network
 
   # ============================================
   # Development Tools
@@ -224,6 +276,8 @@ volumes:
   backend_cache:
     driver: local
   ollama_data:
+    driver: local
+  chromadb_data:
     driver: local
   # prometheus_data:
   #   driver: local

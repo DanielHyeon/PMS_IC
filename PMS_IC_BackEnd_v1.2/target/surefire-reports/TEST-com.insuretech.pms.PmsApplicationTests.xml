@@ -1,0 +1,1405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.insuretech.pms.PmsApplicationTests" time="10.217" tests="1" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="21"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/wp/PMS_IC/PMS_IC_BackEnd_v1.2/target/test-classes:/wp/PMS_IC/PMS_IC_BackEnd_v1.2/target/classes:/root/.m2/repository/org/springframework/boot/spring-boot-starter-web/3.2.1/spring-boot-starter-web-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter/3.2.1/spring-boot-starter-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-logging/3.2.1/spring-boot-starter-logging-3.2.1.jar:/root/.m2/repository/ch/qos/logback/logback-classic/1.4.14/logback-classic-1.4.14.jar:/root/.m2/repository/ch/qos/logback/logback-core/1.4.14/logback-core-1.4.14.jar:/root/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.21.1/log4j-to-slf4j-2.21.1.jar:/root/.m2/repository/org/slf4j/jul-to-slf4j/2.0.9/jul-to-slf4j-2.0.9.jar:/root/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/root/.m2/repository/org/yaml/snakeyaml/2.2/snakeyaml-2.2.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-json/3.2.1/spring-boot-starter-json-3.2.1.jar:/root/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.15.3/jackson-datatype-jdk8-2.15.3.jar:/root/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.15.3/jackson-module-parameter-names-2.15.3.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-tomcat/3.2.1/spring-boot-starter-tomcat-3.2.1.jar:/root/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.17/tomcat-embed-core-10.1.17.jar:/root/.m2/repository/org/apache/tomcat/embed/tomcat-embed-websocket/10.1.17/tomcat-embed-websocket-10.1.17.jar:/root/.m2/repository/org/springframework/spring-web/6.1.2/spring-web-6.1.2.jar:/root/.m2/repository/org/springframework/spring-beans/6.1.2/spring-beans-6.1.2.jar:/root/.m2/repository/org/springframework/spring-webmvc/6.1.2/spring-webmvc-6.1.2.jar:/root/.m2/repository/org/springframework/spring-context/6.1.2/spring-context-6.1.2.jar:/root/.m2/repository/org/springframework/spring-expression/6.1.2/spring-expression-6.1.2.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-data-jpa/3.2.1/spring-boot-starter-data-jpa-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-aop/3.2.1/spring-boot-starter-aop-3.2.1.jar:/root/.m2/repository/org/aspectj/aspectjweaver/1.9.21/aspectjweaver-1.9.21.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-jdbc/3.2.1/spring-boot-starter-jdbc-3.2.1.jar:/root/.m2/repository/com/zaxxer/HikariCP/5.0.1/HikariCP-5.0.1.jar:/root/.m2/repository/org/springframework/spring-jdbc/6.1.2/spring-jdbc-6.1.2.jar:/root/.m2/repository/org/hibernate/orm/hibernate-core/6.4.1.Final/hibernate-core-6.4.1.Final.jar:/root/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/root/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/root/.m2/repository/org/jboss/logging/jboss-logging/3.5.3.Final/jboss-logging-3.5.3.Final.jar:/root/.m2/repository/org/hibernate/common/hibernate-commons-annotations/6.0.6.Final/hibernate-commons-annotations-6.0.6.Final.jar:/root/.m2/repository/io/smallrye/jandex/3.1.2/jandex-3.1.2.jar:/root/.m2/repository/com/fasterxml/classmate/1.6.0/classmate-1.6.0.jar:/root/.m2/repository/net/bytebuddy/byte-buddy/1.14.10/byte-buddy-1.14.10.jar:/root/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.4/jaxb-runtime-4.0.4.jar:/root/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.4/jaxb-core-4.0.4.jar:/root/.m2/repository/org/eclipse/angus/angus-activation/2.0.1/angus-activation-2.0.1.jar:/root/.m2/repository/org/glassfish/jaxb/txw2/4.0.4/txw2-4.0.4.jar:/root/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar:/root/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/root/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/root/.m2/repository/org/springframework/data/spring-data-jpa/3.2.1/spring-data-jpa-3.2.1.jar:/root/.m2/repository/org/springframework/data/spring-data-commons/3.2.1/spring-data-commons-3.2.1.jar:/root/.m2/repository/org/springframework/spring-orm/6.1.2/spring-orm-6.1.2.jar:/root/.m2/repository/org/springframework/spring-tx/6.1.2/spring-tx-6.1.2.jar:/root/.m2/repository/org/springframework/spring-aspects/6.1.2/spring-aspects-6.1.2.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-data-redis/3.2.1/spring-boot-starter-data-redis-3.2.1.jar:/root/.m2/repository/io/lettuce/lettuce-core/6.3.0.RELEASE/lettuce-core-6.3.0.RELEASE.jar:/root/.m2/repository/io/netty/netty-common/4.1.104.Final/netty-common-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-handler/4.1.104.Final/netty-handler-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-resolver/4.1.104.Final/netty-resolver-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-buffer/4.1.104.Final/netty-buffer-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.104.Final/netty-transport-native-unix-common-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-codec/4.1.104.Final/netty-codec-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-transport/4.1.104.Final/netty-transport-4.1.104.Final.jar:/root/.m2/repository/org/springframework/data/spring-data-redis/3.2.1/spring-data-redis-3.2.1.jar:/root/.m2/repository/org/springframework/data/spring-data-keyvalue/3.2.1/spring-data-keyvalue-3.2.1.jar:/root/.m2/repository/org/springframework/spring-oxm/6.1.2/spring-oxm-6.1.2.jar:/root/.m2/repository/org/springframework/spring-context-support/6.1.2/spring-context-support-6.1.2.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-security/3.2.1/spring-boot-starter-security-3.2.1.jar:/root/.m2/repository/org/springframework/spring-aop/6.1.2/spring-aop-6.1.2.jar:/root/.m2/repository/org/springframework/security/spring-security-config/6.2.1/spring-security-config-6.2.1.jar:/root/.m2/repository/org/springframework/security/spring-security-web/6.2.1/spring-security-web-6.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-validation/3.2.1/spring-boot-starter-validation-3.2.1.jar:/root/.m2/repository/org/apache/tomcat/embed/tomcat-embed-el/10.1.17/tomcat-embed-el-10.1.17.jar:/root/.m2/repository/org/hibernate/validator/hibernate-validator/8.0.1.Final/hibernate-validator-8.0.1.Final.jar:/root/.m2/repository/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/3.2.1/spring-boot-starter-actuator-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/3.2.1/spring-boot-actuator-autoconfigure-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-actuator/3.2.1/spring-boot-actuator-3.2.1.jar:/root/.m2/repository/io/micrometer/micrometer-observation/1.12.1/micrometer-observation-1.12.1.jar:/root/.m2/repository/io/micrometer/micrometer-commons/1.12.1/micrometer-commons-1.12.1.jar:/root/.m2/repository/io/micrometer/micrometer-jakarta9/1.12.1/micrometer-jakarta9-1.12.1.jar:/root/.m2/repository/io/micrometer/micrometer-core/1.12.1/micrometer-core-1.12.1.jar:/root/.m2/repository/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.jar:/root/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-websocket/3.2.1/spring-boot-starter-websocket-3.2.1.jar:/root/.m2/repository/org/springframework/spring-messaging/6.1.2/spring-messaging-6.1.2.jar:/root/.m2/repository/org/springframework/spring-websocket/6.1.2/spring-websocket-6.1.2.jar:/root/.m2/repository/org/postgresql/postgresql/42.6.0/postgresql-42.6.0.jar:/root/.m2/repository/org/checkerframework/checker-qual/3.31.0/checker-qual-3.31.0.jar:/root/.m2/repository/com/h2database/h2/2.2.224/h2-2.2.224.jar:/root/.m2/repository/redis/clients/jedis/5.0.2/jedis-5.0.2.jar:/root/.m2/repository/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar:/root/.m2/repository/org/apache/commons/commons-pool2/2.12.0/commons-pool2-2.12.0.jar:/root/.m2/repository/org/json/json/20231013/json-20231013.jar:/root/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar:/root/.m2/repository/io/jsonwebtoken/jjwt-api/0.12.3/jjwt-api-0.12.3.jar:/root/.m2/repository/io/jsonwebtoken/jjwt-impl/0.12.3/jjwt-impl-0.12.3.jar:/root/.m2/repository/io/jsonwebtoken/jjwt-jackson/0.12.3/jjwt-jackson-0.12.3.jar:/root/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.3/jackson-databind-2.15.3.jar:/root/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar:/root/.m2/repository/org/springdoc/springdoc-openapi-starter-webmvc-ui/2.3.0/springdoc-openapi-starter-webmvc-ui-2.3.0.jar:/root/.m2/repository/org/springdoc/springdoc-openapi-starter-webmvc-api/2.3.0/springdoc-openapi-starter-webmvc-api-2.3.0.jar:/root/.m2/repository/org/springdoc/springdoc-openapi-starter-common/2.3.0/springdoc-openapi-starter-common-2.3.0.jar:/root/.m2/repository/io/swagger/core/v3/swagger-core-jakarta/2.2.19/swagger-core-jakarta-2.2.19.jar:/root/.m2/repository/org/apache/commons/commons-lang3/3.13.0/commons-lang3-3.13.0.jar:/root/.m2/repository/io/swagger/core/v3/swagger-annotations-jakarta/2.2.19/swagger-annotations-jakarta-2.2.19.jar:/root/.m2/repository/io/swagger/core/v3/swagger-models-jakarta/2.2.19/swagger-models-jakarta-2.2.19.jar:/root/.m2/repository/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.15.3/jackson-dataformat-yaml-2.15.3.jar:/root/.m2/repository/org/webjars/swagger-ui/5.10.3/swagger-ui-5.10.3.jar:/root/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.15.3/jackson-datatype-jsr310-2.15.3.jar:/root/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.3/jackson-annotations-2.15.3.jar:/root/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.3/jackson-core-2.15.3.jar:/root/.m2/repository/org/springframework/boot/spring-boot-devtools/3.2.1/spring-boot-devtools-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot/3.2.1/spring-boot-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/3.2.1/spring-boot-autoconfigure-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-test/3.2.1/spring-boot-starter-test-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-test/3.2.1/spring-boot-test-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/3.2.1/spring-boot-test-autoconfigure-3.2.1.jar:/root/.m2/repository/com/jayway/jsonpath/json-path/2.8.0/json-path-2.8.0.jar:/root/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.1/jakarta.xml.bind-api-4.0.1.jar:/root/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.2/jakarta.activation-api-2.1.2.jar:/root/.m2/repository/net/minidev/json-smart/2.5.0/json-smart-2.5.0.jar:/root/.m2/repository/net/minidev/accessors-smart/2.5.0/accessors-smart-2.5.0.jar:/root/.m2/repository/org/ow2/asm/asm/9.3/asm-9.3.jar:/root/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/root/.m2/repository/org/awaitility/awaitility/4.2.0/awaitility-4.2.0.jar:/root/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/root/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.1/junit-jupiter-5.10.1.jar:/root/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.1/junit-jupiter-api-5.10.1.jar:/root/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/root/.m2/repository/org/junit/platform/junit-platform-commons/1.10.1/junit-platform-commons-1.10.1.jar:/root/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/root/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.1/junit-jupiter-params-5.10.1.jar:/root/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.1/junit-jupiter-engine-5.10.1.jar:/root/.m2/repository/org/junit/platform/junit-platform-engine/1.10.1/junit-platform-engine-1.10.1.jar:/root/.m2/repository/org/mockito/mockito-core/5.7.0/mockito-core-5.7.0.jar:/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.10/byte-buddy-agent-1.14.10.jar:/root/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/root/.m2/repository/org/mockito/mockito-junit-jupiter/5.7.0/mockito-junit-jupiter-5.7.0.jar:/root/.m2/repository/org/skyscreamer/jsonassert/1.5.1/jsonassert-1.5.1.jar:/root/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar:/root/.m2/repository/org/springframework/spring-core/6.1.2/spring-core-6.1.2.jar:/root/.m2/repository/org/springframework/spring-jcl/6.1.2/spring-jcl-6.1.2.jar:/root/.m2/repository/org/springframework/spring-test/6.1.2/spring-test-6.1.2.jar:/root/.m2/repository/org/xmlunit/xmlunit-core/2.9.1/xmlunit-core-2.9.1.jar:/root/.m2/repository/org/springframework/security/spring-security-test/6.2.1/spring-security-test-6.2.1.jar:/root/.m2/repository/org/springframework/security/spring-security-core/6.2.1/spring-security-core-6.2.1.jar:/root/.m2/repository/org/springframework/security/spring-security-crypto/6.2.1/spring-security-crypto-6.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-webflux/3.2.1/spring-boot-starter-webflux-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-reactor-netty/3.2.1/spring-boot-starter-reactor-netty-3.2.1.jar:/root/.m2/repository/io/projectreactor/netty/reactor-netty-http/1.1.14/reactor-netty-http-1.1.14.jar:/root/.m2/repository/io/netty/netty-codec-http/4.1.104.Final/netty-codec-http-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-codec-http2/4.1.104.Final/netty-codec-http2-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-resolver-dns/4.1.104.Final/netty-resolver-dns-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-codec-dns/4.1.104.Final/netty-codec-dns-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-resolver-dns-native-macos/4.1.104.Final/netty-resolver-dns-native-macos-4.1.104.Final-osx-x86_64.jar:/root/.m2/repository/io/netty/netty-resolver-dns-classes-macos/4.1.104.Final/netty-resolver-dns-classes-macos-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-transport-native-epoll/4.1.104.Final/netty-transport-native-epoll-4.1.104.Final-linux-x86_64.jar:/root/.m2/repository/io/netty/netty-transport-classes-epoll/4.1.104.Final/netty-transport-classes-epoll-4.1.104.Final.jar:/root/.m2/repository/io/projectreactor/netty/reactor-netty-core/1.1.14/reactor-netty-core-1.1.14.jar:/root/.m2/repository/io/netty/netty-handler-proxy/4.1.104.Final/netty-handler-proxy-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-codec-socks/4.1.104.Final/netty-codec-socks-4.1.104.Final.jar:/root/.m2/repository/org/springframework/spring-webflux/6.1.2/spring-webflux-6.1.2.jar:/root/.m2/repository/org/apache/pdfbox/pdfbox/3.0.1/pdfbox-3.0.1.jar:/root/.m2/repository/org/apache/pdfbox/pdfbox-io/3.0.1/pdfbox-io-3.0.1.jar:/root/.m2/repository/org/apache/pdfbox/fontbox/3.0.1/fontbox-3.0.1.jar:/root/.m2/repository/commons-logging/commons-logging/1.2/commons-logging-1.2.jar:/root/.m2/repository/org/apache/poi/poi-ooxml/5.2.5/poi-ooxml-5.2.5.jar:/root/.m2/repository/org/apache/poi/poi-ooxml-lite/5.2.5/poi-ooxml-lite-5.2.5.jar:/root/.m2/repository/org/apache/xmlbeans/xmlbeans/5.2.0/xmlbeans-5.2.0.jar:/root/.m2/repository/org/apache/commons/commons-compress/1.25.0/commons-compress-1.25.0.jar:/root/.m2/repository/commons-io/commons-io/2.15.0/commons-io-2.15.0.jar:/root/.m2/repository/com/github/virtuald/curvesapi/1.08/curvesapi-1.08.jar:/root/.m2/repository/org/apache/logging/log4j/log4j-api/2.21.1/log4j-api-2.21.1.jar:/root/.m2/repository/org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.jar:/root/.m2/repository/org/apache/poi/poi/5.2.5/poi-5.2.5.jar:/root/.m2/repository/commons-codec/commons-codec/1.16.0/commons-codec-1.16.0.jar:/root/.m2/repository/org/apache/commons/commons-math3/3.6.1/commons-math3-3.6.1.jar:/root/.m2/repository/com/zaxxer/SparseBitSet/1.3/SparseBitSet-1.3.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-spring-boot3/2.1.0/resilience4j-spring-boot3-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-spring6/2.1.0/resilience4j-spring6-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-annotations/2.1.0/resilience4j-annotations-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-consumer/2.1.0/resilience4j-consumer-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-circularbuffer/2.1.0/resilience4j-circularbuffer-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-framework-common/2.1.0/resilience4j-framework-common-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-micrometer/2.1.0/resilience4j-micrometer-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-reactor/2.1.0/resilience4j-reactor-2.1.0.jar:/root/.m2/repository/io/projectreactor/reactor-core/3.6.1/reactor-core-3.6.1.jar:/root/.m2/repository/org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-circuitbreaker/2.1.0/resilience4j-circuitbreaker-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-core/2.1.0/resilience4j-core-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-ratelimiter/2.1.0/resilience4j-ratelimiter-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-timelimiter/2.1.0/resilience4j-timelimiter-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-bulkhead/2.1.0/resilience4j-bulkhead-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-retry/2.1.0/resilience4j-retry-2.1.0.jar:"/>
+    <property name="java.vm.vendor" value="Ubuntu"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://ubuntu.com/"/>
+    <property name="user.timezone" value="Asia/Seoul"/>
+    <property name="org.jboss.logging.provider" value="slf4j"/>
+    <property name="os.name" value="Linux"/>
+    <property name="java.vm.specification.version" value="21"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.boot.library.path" value="/usr/lib/jvm/java-21-openjdk-amd64/lib"/>
+    <property name="sun.java.command" value="/wp/PMS_IC/PMS_IC_BackEnd_v1.2/target/surefire/surefirebooter-20260103162932366_3.jar /wp/PMS_IC/PMS_IC_BackEnd_v1.2/target/surefire 2026-01-03T16-29-32_294-jvmRun1 surefire-20260103162932366_1tmp surefire_0-20260103162932366_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="/wp/PMS_IC/PMS_IC_BackEnd_v1.2/target/test-classes:/wp/PMS_IC/PMS_IC_BackEnd_v1.2/target/classes:/root/.m2/repository/org/springframework/boot/spring-boot-starter-web/3.2.1/spring-boot-starter-web-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter/3.2.1/spring-boot-starter-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-logging/3.2.1/spring-boot-starter-logging-3.2.1.jar:/root/.m2/repository/ch/qos/logback/logback-classic/1.4.14/logback-classic-1.4.14.jar:/root/.m2/repository/ch/qos/logback/logback-core/1.4.14/logback-core-1.4.14.jar:/root/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.21.1/log4j-to-slf4j-2.21.1.jar:/root/.m2/repository/org/slf4j/jul-to-slf4j/2.0.9/jul-to-slf4j-2.0.9.jar:/root/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/root/.m2/repository/org/yaml/snakeyaml/2.2/snakeyaml-2.2.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-json/3.2.1/spring-boot-starter-json-3.2.1.jar:/root/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.15.3/jackson-datatype-jdk8-2.15.3.jar:/root/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.15.3/jackson-module-parameter-names-2.15.3.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-tomcat/3.2.1/spring-boot-starter-tomcat-3.2.1.jar:/root/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.17/tomcat-embed-core-10.1.17.jar:/root/.m2/repository/org/apache/tomcat/embed/tomcat-embed-websocket/10.1.17/tomcat-embed-websocket-10.1.17.jar:/root/.m2/repository/org/springframework/spring-web/6.1.2/spring-web-6.1.2.jar:/root/.m2/repository/org/springframework/spring-beans/6.1.2/spring-beans-6.1.2.jar:/root/.m2/repository/org/springframework/spring-webmvc/6.1.2/spring-webmvc-6.1.2.jar:/root/.m2/repository/org/springframework/spring-context/6.1.2/spring-context-6.1.2.jar:/root/.m2/repository/org/springframework/spring-expression/6.1.2/spring-expression-6.1.2.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-data-jpa/3.2.1/spring-boot-starter-data-jpa-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-aop/3.2.1/spring-boot-starter-aop-3.2.1.jar:/root/.m2/repository/org/aspectj/aspectjweaver/1.9.21/aspectjweaver-1.9.21.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-jdbc/3.2.1/spring-boot-starter-jdbc-3.2.1.jar:/root/.m2/repository/com/zaxxer/HikariCP/5.0.1/HikariCP-5.0.1.jar:/root/.m2/repository/org/springframework/spring-jdbc/6.1.2/spring-jdbc-6.1.2.jar:/root/.m2/repository/org/hibernate/orm/hibernate-core/6.4.1.Final/hibernate-core-6.4.1.Final.jar:/root/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/root/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/root/.m2/repository/org/jboss/logging/jboss-logging/3.5.3.Final/jboss-logging-3.5.3.Final.jar:/root/.m2/repository/org/hibernate/common/hibernate-commons-annotations/6.0.6.Final/hibernate-commons-annotations-6.0.6.Final.jar:/root/.m2/repository/io/smallrye/jandex/3.1.2/jandex-3.1.2.jar:/root/.m2/repository/com/fasterxml/classmate/1.6.0/classmate-1.6.0.jar:/root/.m2/repository/net/bytebuddy/byte-buddy/1.14.10/byte-buddy-1.14.10.jar:/root/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.4/jaxb-runtime-4.0.4.jar:/root/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.4/jaxb-core-4.0.4.jar:/root/.m2/repository/org/eclipse/angus/angus-activation/2.0.1/angus-activation-2.0.1.jar:/root/.m2/repository/org/glassfish/jaxb/txw2/4.0.4/txw2-4.0.4.jar:/root/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar:/root/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/root/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/root/.m2/repository/org/springframework/data/spring-data-jpa/3.2.1/spring-data-jpa-3.2.1.jar:/root/.m2/repository/org/springframework/data/spring-data-commons/3.2.1/spring-data-commons-3.2.1.jar:/root/.m2/repository/org/springframework/spring-orm/6.1.2/spring-orm-6.1.2.jar:/root/.m2/repository/org/springframework/spring-tx/6.1.2/spring-tx-6.1.2.jar:/root/.m2/repository/org/springframework/spring-aspects/6.1.2/spring-aspects-6.1.2.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-data-redis/3.2.1/spring-boot-starter-data-redis-3.2.1.jar:/root/.m2/repository/io/lettuce/lettuce-core/6.3.0.RELEASE/lettuce-core-6.3.0.RELEASE.jar:/root/.m2/repository/io/netty/netty-common/4.1.104.Final/netty-common-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-handler/4.1.104.Final/netty-handler-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-resolver/4.1.104.Final/netty-resolver-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-buffer/4.1.104.Final/netty-buffer-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.104.Final/netty-transport-native-unix-common-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-codec/4.1.104.Final/netty-codec-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-transport/4.1.104.Final/netty-transport-4.1.104.Final.jar:/root/.m2/repository/org/springframework/data/spring-data-redis/3.2.1/spring-data-redis-3.2.1.jar:/root/.m2/repository/org/springframework/data/spring-data-keyvalue/3.2.1/spring-data-keyvalue-3.2.1.jar:/root/.m2/repository/org/springframework/spring-oxm/6.1.2/spring-oxm-6.1.2.jar:/root/.m2/repository/org/springframework/spring-context-support/6.1.2/spring-context-support-6.1.2.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-security/3.2.1/spring-boot-starter-security-3.2.1.jar:/root/.m2/repository/org/springframework/spring-aop/6.1.2/spring-aop-6.1.2.jar:/root/.m2/repository/org/springframework/security/spring-security-config/6.2.1/spring-security-config-6.2.1.jar:/root/.m2/repository/org/springframework/security/spring-security-web/6.2.1/spring-security-web-6.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-validation/3.2.1/spring-boot-starter-validation-3.2.1.jar:/root/.m2/repository/org/apache/tomcat/embed/tomcat-embed-el/10.1.17/tomcat-embed-el-10.1.17.jar:/root/.m2/repository/org/hibernate/validator/hibernate-validator/8.0.1.Final/hibernate-validator-8.0.1.Final.jar:/root/.m2/repository/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/3.2.1/spring-boot-starter-actuator-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/3.2.1/spring-boot-actuator-autoconfigure-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-actuator/3.2.1/spring-boot-actuator-3.2.1.jar:/root/.m2/repository/io/micrometer/micrometer-observation/1.12.1/micrometer-observation-1.12.1.jar:/root/.m2/repository/io/micrometer/micrometer-commons/1.12.1/micrometer-commons-1.12.1.jar:/root/.m2/repository/io/micrometer/micrometer-jakarta9/1.12.1/micrometer-jakarta9-1.12.1.jar:/root/.m2/repository/io/micrometer/micrometer-core/1.12.1/micrometer-core-1.12.1.jar:/root/.m2/repository/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.jar:/root/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-websocket/3.2.1/spring-boot-starter-websocket-3.2.1.jar:/root/.m2/repository/org/springframework/spring-messaging/6.1.2/spring-messaging-6.1.2.jar:/root/.m2/repository/org/springframework/spring-websocket/6.1.2/spring-websocket-6.1.2.jar:/root/.m2/repository/org/postgresql/postgresql/42.6.0/postgresql-42.6.0.jar:/root/.m2/repository/org/checkerframework/checker-qual/3.31.0/checker-qual-3.31.0.jar:/root/.m2/repository/com/h2database/h2/2.2.224/h2-2.2.224.jar:/root/.m2/repository/redis/clients/jedis/5.0.2/jedis-5.0.2.jar:/root/.m2/repository/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar:/root/.m2/repository/org/apache/commons/commons-pool2/2.12.0/commons-pool2-2.12.0.jar:/root/.m2/repository/org/json/json/20231013/json-20231013.jar:/root/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar:/root/.m2/repository/io/jsonwebtoken/jjwt-api/0.12.3/jjwt-api-0.12.3.jar:/root/.m2/repository/io/jsonwebtoken/jjwt-impl/0.12.3/jjwt-impl-0.12.3.jar:/root/.m2/repository/io/jsonwebtoken/jjwt-jackson/0.12.3/jjwt-jackson-0.12.3.jar:/root/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.3/jackson-databind-2.15.3.jar:/root/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar:/root/.m2/repository/org/springdoc/springdoc-openapi-starter-webmvc-ui/2.3.0/springdoc-openapi-starter-webmvc-ui-2.3.0.jar:/root/.m2/repository/org/springdoc/springdoc-openapi-starter-webmvc-api/2.3.0/springdoc-openapi-starter-webmvc-api-2.3.0.jar:/root/.m2/repository/org/springdoc/springdoc-openapi-starter-common/2.3.0/springdoc-openapi-starter-common-2.3.0.jar:/root/.m2/repository/io/swagger/core/v3/swagger-core-jakarta/2.2.19/swagger-core-jakarta-2.2.19.jar:/root/.m2/repository/org/apache/commons/commons-lang3/3.13.0/commons-lang3-3.13.0.jar:/root/.m2/repository/io/swagger/core/v3/swagger-annotations-jakarta/2.2.19/swagger-annotations-jakarta-2.2.19.jar:/root/.m2/repository/io/swagger/core/v3/swagger-models-jakarta/2.2.19/swagger-models-jakarta-2.2.19.jar:/root/.m2/repository/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.15.3/jackson-dataformat-yaml-2.15.3.jar:/root/.m2/repository/org/webjars/swagger-ui/5.10.3/swagger-ui-5.10.3.jar:/root/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.15.3/jackson-datatype-jsr310-2.15.3.jar:/root/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.3/jackson-annotations-2.15.3.jar:/root/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.3/jackson-core-2.15.3.jar:/root/.m2/repository/org/springframework/boot/spring-boot-devtools/3.2.1/spring-boot-devtools-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot/3.2.1/spring-boot-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/3.2.1/spring-boot-autoconfigure-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-test/3.2.1/spring-boot-starter-test-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-test/3.2.1/spring-boot-test-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/3.2.1/spring-boot-test-autoconfigure-3.2.1.jar:/root/.m2/repository/com/jayway/jsonpath/json-path/2.8.0/json-path-2.8.0.jar:/root/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.1/jakarta.xml.bind-api-4.0.1.jar:/root/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.2/jakarta.activation-api-2.1.2.jar:/root/.m2/repository/net/minidev/json-smart/2.5.0/json-smart-2.5.0.jar:/root/.m2/repository/net/minidev/accessors-smart/2.5.0/accessors-smart-2.5.0.jar:/root/.m2/repository/org/ow2/asm/asm/9.3/asm-9.3.jar:/root/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/root/.m2/repository/org/awaitility/awaitility/4.2.0/awaitility-4.2.0.jar:/root/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/root/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.1/junit-jupiter-5.10.1.jar:/root/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.1/junit-jupiter-api-5.10.1.jar:/root/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/root/.m2/repository/org/junit/platform/junit-platform-commons/1.10.1/junit-platform-commons-1.10.1.jar:/root/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/root/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.1/junit-jupiter-params-5.10.1.jar:/root/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.1/junit-jupiter-engine-5.10.1.jar:/root/.m2/repository/org/junit/platform/junit-platform-engine/1.10.1/junit-platform-engine-1.10.1.jar:/root/.m2/repository/org/mockito/mockito-core/5.7.0/mockito-core-5.7.0.jar:/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.10/byte-buddy-agent-1.14.10.jar:/root/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/root/.m2/repository/org/mockito/mockito-junit-jupiter/5.7.0/mockito-junit-jupiter-5.7.0.jar:/root/.m2/repository/org/skyscreamer/jsonassert/1.5.1/jsonassert-1.5.1.jar:/root/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar:/root/.m2/repository/org/springframework/spring-core/6.1.2/spring-core-6.1.2.jar:/root/.m2/repository/org/springframework/spring-jcl/6.1.2/spring-jcl-6.1.2.jar:/root/.m2/repository/org/springframework/spring-test/6.1.2/spring-test-6.1.2.jar:/root/.m2/repository/org/xmlunit/xmlunit-core/2.9.1/xmlunit-core-2.9.1.jar:/root/.m2/repository/org/springframework/security/spring-security-test/6.2.1/spring-security-test-6.2.1.jar:/root/.m2/repository/org/springframework/security/spring-security-core/6.2.1/spring-security-core-6.2.1.jar:/root/.m2/repository/org/springframework/security/spring-security-crypto/6.2.1/spring-security-crypto-6.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-webflux/3.2.1/spring-boot-starter-webflux-3.2.1.jar:/root/.m2/repository/org/springframework/boot/spring-boot-starter-reactor-netty/3.2.1/spring-boot-starter-reactor-netty-3.2.1.jar:/root/.m2/repository/io/projectreactor/netty/reactor-netty-http/1.1.14/reactor-netty-http-1.1.14.jar:/root/.m2/repository/io/netty/netty-codec-http/4.1.104.Final/netty-codec-http-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-codec-http2/4.1.104.Final/netty-codec-http2-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-resolver-dns/4.1.104.Final/netty-resolver-dns-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-codec-dns/4.1.104.Final/netty-codec-dns-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-resolver-dns-native-macos/4.1.104.Final/netty-resolver-dns-native-macos-4.1.104.Final-osx-x86_64.jar:/root/.m2/repository/io/netty/netty-resolver-dns-classes-macos/4.1.104.Final/netty-resolver-dns-classes-macos-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-transport-native-epoll/4.1.104.Final/netty-transport-native-epoll-4.1.104.Final-linux-x86_64.jar:/root/.m2/repository/io/netty/netty-transport-classes-epoll/4.1.104.Final/netty-transport-classes-epoll-4.1.104.Final.jar:/root/.m2/repository/io/projectreactor/netty/reactor-netty-core/1.1.14/reactor-netty-core-1.1.14.jar:/root/.m2/repository/io/netty/netty-handler-proxy/4.1.104.Final/netty-handler-proxy-4.1.104.Final.jar:/root/.m2/repository/io/netty/netty-codec-socks/4.1.104.Final/netty-codec-socks-4.1.104.Final.jar:/root/.m2/repository/org/springframework/spring-webflux/6.1.2/spring-webflux-6.1.2.jar:/root/.m2/repository/org/apache/pdfbox/pdfbox/3.0.1/pdfbox-3.0.1.jar:/root/.m2/repository/org/apache/pdfbox/pdfbox-io/3.0.1/pdfbox-io-3.0.1.jar:/root/.m2/repository/org/apache/pdfbox/fontbox/3.0.1/fontbox-3.0.1.jar:/root/.m2/repository/commons-logging/commons-logging/1.2/commons-logging-1.2.jar:/root/.m2/repository/org/apache/poi/poi-ooxml/5.2.5/poi-ooxml-5.2.5.jar:/root/.m2/repository/org/apache/poi/poi-ooxml-lite/5.2.5/poi-ooxml-lite-5.2.5.jar:/root/.m2/repository/org/apache/xmlbeans/xmlbeans/5.2.0/xmlbeans-5.2.0.jar:/root/.m2/repository/org/apache/commons/commons-compress/1.25.0/commons-compress-1.25.0.jar:/root/.m2/repository/commons-io/commons-io/2.15.0/commons-io-2.15.0.jar:/root/.m2/repository/com/github/virtuald/curvesapi/1.08/curvesapi-1.08.jar:/root/.m2/repository/org/apache/logging/log4j/log4j-api/2.21.1/log4j-api-2.21.1.jar:/root/.m2/repository/org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.jar:/root/.m2/repository/org/apache/poi/poi/5.2.5/poi-5.2.5.jar:/root/.m2/repository/commons-codec/commons-codec/1.16.0/commons-codec-1.16.0.jar:/root/.m2/repository/org/apache/commons/commons-math3/3.6.1/commons-math3-3.6.1.jar:/root/.m2/repository/com/zaxxer/SparseBitSet/1.3/SparseBitSet-1.3.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-spring-boot3/2.1.0/resilience4j-spring-boot3-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-spring6/2.1.0/resilience4j-spring6-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-annotations/2.1.0/resilience4j-annotations-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-consumer/2.1.0/resilience4j-consumer-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-circularbuffer/2.1.0/resilience4j-circularbuffer-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-framework-common/2.1.0/resilience4j-framework-common-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-micrometer/2.1.0/resilience4j-micrometer-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-reactor/2.1.0/resilience4j-reactor-2.1.0.jar:/root/.m2/repository/io/projectreactor/reactor-core/3.6.1/reactor-core-3.6.1.jar:/root/.m2/repository/org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-circuitbreaker/2.1.0/resilience4j-circuitbreaker-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-core/2.1.0/resilience4j-core-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-ratelimiter/2.1.0/resilience4j-ratelimiter-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-timelimiter/2.1.0/resilience4j-timelimiter-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-bulkhead/2.1.0/resilience4j-bulkhead-2.1.0.jar:/root/.m2/repository/io/github/resilience4j/resilience4j-retry/2.1.0/resilience4j-retry-2.1.0.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/root"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-10-21"/>
+    <property name="java.home" value="/usr/lib/jvm/java-21-openjdk-amd64"/>
+    <property name="file.separator" value="/"/>
+    <property name="basedir" value="/wp/PMS_IC/PMS_IC_BackEnd_v1.2"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="FILE_LOG_CHARSET" value="UTF-8"/>
+    <property name="java.awt.headless" value="true"/>
+    <property name="surefire.real.class.path" value="/wp/PMS_IC/PMS_IC_BackEnd_v1.2/target/surefire/surefirebooter-20260103162932366_3.jar"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="21.0.9+10-Ubuntu-124.04"/>
+    <property name="user.name" value="root"/>
+    <property name="stdout.encoding" value="UTF-8"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="6.6.87.2-microsoft-standard-WSL2"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="localRepository" value="/root/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://bugs.launchpad.net/ubuntu/+source/openjdk-21"/>
+    <property name="java.io.tmpdir" value="/tmp"/>
+    <property name="com.zaxxer.hikari.pool_number" value="1"/>
+    <property name="java.version" value="21.0.9"/>
+    <property name="user.dir" value="/wp/PMS_IC/PMS_IC_BackEnd_v1.2"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="PID" value="13544"/>
+    <property name="CONSOLE_LOG_CHARSET" value="UTF-8"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/usr/java/packages/lib:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib"/>
+    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="java.vendor" value="Ubuntu"/>
+    <property name="java.vm.version" value="21.0.9+10-Ubuntu-124.04"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="65.0"/>
+    <property name="LOGGED_APPLICATION_NAME" value="[pms-backend] "/>
+  </properties>
+  <testcase name="contextLoads" classname="com.insuretech.pms.PmsApplicationTests" time="0.419">
+    <system-out><![CDATA[16:29:33.078 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.insuretech.pms.PmsApplicationTests]: PmsApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:29:33.181 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.insuretech.pms.PmsApplication for test class com.insuretech.pms.PmsApplicationTests
+16:29:33.300 [main] INFO org.springframework.boot.devtools.restart.RestartApplicationListener -- Restart disabled due to context in which it is running
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.1)
+
+2026-01-03T16:29:33.570+09:00  WARN 13544 --- [pms-backend] [           main] ory$DuplicateJsonObjectContextCustomizer : 
+
+Found multiple occurrences of org.json.JSONObject on the class path:
+
+	jar:file:/root/.m2/repository/org/json/json/20231013/json-20231013.jar!/org/json/JSONObject.class
+	jar:file:/root/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar!/org/json/JSONObject.class
+
+You may wish to exclude one of them to ensure predictable runtime behavior
+
+2026-01-03T16:29:33.580+09:00  INFO 13544 --- [pms-backend] [           main] com.insuretech.pms.PmsApplicationTests   : Starting PmsApplicationTests using Java 21.0.9 with PID 13544 (started by root in /wp/PMS_IC/PMS_IC_BackEnd_v1.2)
+2026-01-03T16:29:33.580+09:00 DEBUG 13544 --- [pms-backend] [           main] com.insuretech.pms.PmsApplicationTests   : Running with Spring Boot v3.2.1, Spring v6.1.2
+2026-01-03T16:29:33.581+09:00  INFO 13544 --- [pms-backend] [           main] com.insuretech.pms.PmsApplicationTests   : The following 1 profile is active: "test"
+2026-01-03T16:29:34.756+09:00  INFO 13544 --- [pms-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-03T16:29:34.757+09:00  INFO 13544 --- [pms-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-03T16:29:34.919+09:00  INFO 13544 --- [pms-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 156 ms. Found 14 JPA repository interfaces.
+2026-01-03T16:29:34.933+09:00  INFO 13544 --- [pms-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-03T16:29:34.934+09:00  INFO 13544 --- [pms-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-03T16:29:34.949+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.auth.repository.PermissionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.950+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.auth.repository.RolePermissionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.951+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.auth.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.951+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.chat.repository.ChatMessageRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.952+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.chat.repository.ChatSessionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.952+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.project.repository.DeliverableRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.952+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.project.repository.KpiRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.953+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.project.repository.PhaseGateRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.953+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.project.repository.PhaseRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.953+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.project.repository.ProjectRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.953+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.task.repository.KanbanColumnRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.954+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.task.repository.SprintRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.954+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.task.repository.TaskRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.954+09:00  INFO 13544 --- [pms-backend] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.insuretech.pms.task.repository.UserStoryRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-03T16:29:34.955+09:00  INFO 13544 --- [pms-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 14 ms. Found 0 Redis repository interfaces.
+2026-01-03T16:29:35.800+09:00  INFO 13544 --- [pms-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-01-03T16:29:35.941+09:00  INFO 13544 --- [pms-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+2026-01-03T16:29:35.942+09:00  INFO 13544 --- [pms-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-01-03T16:29:36.078+09:00  INFO 13544 --- [pms-backend] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-03T16:29:36.118+09:00  INFO 13544 --- [pms-backend] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.1.Final
+2026-01-03T16:29:36.147+09:00  INFO 13544 --- [pms-backend] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-03T16:29:36.293+09:00  INFO 13544 --- [pms-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-03T16:29:36.323+09:00  WARN 13544 --- [pms-backend] [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-01-03T16:29:37.514+09:00  INFO 13544 --- [pms-backend] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-03T16:29:37.523+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists auth.permissions cascade 
+2026-01-03T16:29:37.523+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists auth.role_permissions cascade 
+2026-01-03T16:29:37.524+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists auth.users cascade 
+2026-01-03T16:29:37.524+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists chat.chat_messages cascade 
+2026-01-03T16:29:37.524+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists chat.chat_sessions cascade 
+2026-01-03T16:29:37.525+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists project.deliverables cascade 
+2026-01-03T16:29:37.525+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists project.kpis cascade 
+2026-01-03T16:29:37.525+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists project.phase_gates cascade 
+2026-01-03T16:29:37.526+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists project.phases cascade 
+2026-01-03T16:29:37.526+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists project.projects cascade 
+2026-01-03T16:29:37.526+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists task.kanban_columns cascade 
+2026-01-03T16:29:37.526+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists task.sprints cascade 
+2026-01-03T16:29:37.526+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists task.tasks cascade 
+2026-01-03T16:29:37.526+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    drop table if exists task.user_stories cascade 
+2026-01-03T16:29:37.530+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table auth.permissions (
+        created_at timestamp(6) not null,
+        updated_at timestamp(6),
+        action varchar(50),
+        category varchar(50) not null,
+        id varchar(100) not null,
+        resource varchar(100),
+        name varchar(200) not null,
+        created_by varchar(255),
+        description TEXT,
+        updated_by varchar(255),
+        primary key (id)
+    )
+2026-01-03T16:29:37.536+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table auth.role_permissions (
+        granted boolean not null,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6),
+        id varchar(50) not null,
+        role varchar(50) not null check (role in ('SPONSOR','PMO_HEAD','PM','DEVELOPER','QA','BUSINESS_ANALYST','AUDITOR','ADMIN')),
+        permission_id varchar(100) not null,
+        created_by varchar(255),
+        updated_by varchar(255),
+        primary key (id),
+        unique (role, permission_id)
+    )
+2026-01-03T16:29:37.542+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table auth.users (
+        active boolean not null,
+        created_at timestamp(6) not null,
+        last_login_at timestamp(6),
+        updated_at timestamp(6),
+        id varchar(50) not null,
+        role varchar(50) not null check (role in ('SPONSOR','PMO_HEAD','PM','DEVELOPER','QA','BUSINESS_ANALYST','AUDITOR','ADMIN')),
+        department varchar(100),
+        email varchar(100) not null unique,
+        name varchar(100) not null,
+        created_by varchar(255),
+        password varchar(255) not null,
+        updated_by varchar(255),
+        primary key (id)
+    )
+2026-01-03T16:29:37.546+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table chat.chat_messages (
+        created_at timestamp(6) not null,
+        updated_at timestamp(6),
+        role varchar(20) not null check (role in ('USER','ASSISTANT')),
+        id varchar(50) not null,
+        session_id varchar(50) not null,
+        content TEXT not null,
+        created_by varchar(255),
+        updated_by varchar(255),
+        primary key (id)
+    )
+2026-01-03T16:29:37.548+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table chat.chat_sessions (
+        active boolean not null,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6),
+        id varchar(50) not null,
+        user_id varchar(50) not null,
+        title varchar(200),
+        created_by varchar(255),
+        updated_by varchar(255),
+        primary key (id)
+    )
+2026-01-03T16:29:37.551+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table project.deliverables (
+        approved_at timestamp(6),
+        created_at timestamp(6) not null,
+        file_size bigint,
+        updated_at timestamp(6),
+        approver varchar(50),
+        id varchar(50) not null,
+        phase_id varchar(50) not null,
+        status varchar(50) not null check (status in ('PENDING','IN_REVIEW','APPROVED','REJECTED')),
+        type varchar(50) not null check (type in ('DOCUMENT','CODE','REPORT','PRESENTATION','OTHER')),
+        uploaded_by varchar(50),
+        file_name varchar(200),
+        name varchar(200) not null,
+        file_path varchar(500),
+        created_by varchar(255),
+        description TEXT,
+        updated_by varchar(255),
+        primary key (id)
+    )
+2026-01-03T16:29:37.555+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table project.kpis (
+        created_at timestamp(6) not null,
+        updated_at timestamp(6),
+        id varchar(50) not null,
+        phase_id varchar(50) not null,
+        status varchar(50) not null check (status in ('ACHIEVED','ON_TRACK','AT_RISK')),
+        current varchar(100),
+        target varchar(100) not null,
+        name varchar(200) not null,
+        created_by varchar(255),
+        updated_by varchar(255),
+        primary key (id)
+    )
+2026-01-03T16:29:37.558+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table project.phase_gates (
+        approved_at timestamp(6),
+        created_at timestamp(6) not null,
+        rejected_at timestamp(6),
+        submitted_at timestamp(6),
+        updated_at timestamp(6),
+        approved_by varchar(50),
+        id varchar(50) not null,
+        phase_id varchar(50) not null,
+        rejected_by varchar(50),
+        status varchar(50) not null check (status in ('PENDING','SUBMITTED','APPROVED','REJECTED')),
+        submitted_by varchar(50),
+        comments TEXT,
+        created_by varchar(255),
+        updated_by varchar(255),
+        primary key (id)
+    )
+2026-01-03T16:29:37.561+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table project.phases (
+        end_date date,
+        order_num integer not null,
+        progress integer not null,
+        start_date date,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6),
+        gate_status varchar(50) check (gate_status in ('PENDING','SUBMITTED','APPROVED','REJECTED')),
+        id varchar(50) not null,
+        project_id varchar(50) not null,
+        status varchar(50) not null check (status in ('NOT_STARTED','IN_PROGRESS','COMPLETED','ON_HOLD')),
+        name varchar(200) not null,
+        created_by varchar(255),
+        description TEXT,
+        updated_by varchar(255),
+        primary key (id)
+    )
+2026-01-03T16:29:37.564+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table project.projects (
+        budget numeric(15,2),
+        end_date date,
+        progress integer not null,
+        start_date date,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6),
+        id varchar(50) not null,
+        status varchar(50) not null check (status in ('PLANNING','IN_PROGRESS','ON_HOLD','COMPLETED','CANCELLED')),
+        name varchar(200) not null,
+        created_by varchar(255),
+        description TEXT,
+        updated_by varchar(255),
+        primary key (id)
+    )
+2026-01-03T16:29:37.565+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table task.kanban_columns (
+        order_num integer not null,
+        wip_limit integer,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6),
+        color varchar(20),
+        id varchar(50) not null,
+        project_id varchar(50) not null,
+        name varchar(100) not null,
+        created_by varchar(255),
+        updated_by varchar(255),
+        primary key (id)
+    )
+2026-01-03T16:29:37.569+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table task.sprints (
+        end_date date,
+        start_date date,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6),
+        id varchar(50) not null,
+        project_id varchar(50) not null,
+        status varchar(50) not null check (status in ('PLANNED','ACTIVE','COMPLETED','CANCELLED')),
+        name varchar(100) not null,
+        created_by varchar(255),
+        goal TEXT,
+        updated_by varchar(255),
+        primary key (id)
+    )
+2026-01-03T16:29:37.572+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table task.tasks (
+        due_date date,
+        order_num integer,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6),
+        priority varchar(20) not null check (priority in ('LOW','MEDIUM','HIGH','CRITICAL')),
+        assignee_id varchar(50),
+        column_id varchar(50) not null,
+        id varchar(50) not null,
+        phase_id varchar(50),
+        status varchar(50) not null check (status in ('TODO','IN_PROGRESS','REVIEW','DONE')),
+        title varchar(200) not null,
+        tags varchar(500),
+        created_by varchar(255),
+        description TEXT,
+        updated_by varchar(255),
+        primary key (id)
+    )
+2026-01-03T16:29:37.575+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    create table task.user_stories (
+        priority_order integer,
+        story_points integer,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6),
+        priority varchar(20) not null check (priority in ('LOW','MEDIUM','HIGH','CRITICAL')),
+        assignee_id varchar(50),
+        id varchar(50) not null,
+        project_id varchar(50) not null,
+        sprint_id varchar(50),
+        status varchar(50) not null check (status in ('BACKLOG','SELECTED','IN_PROGRESS','COMPLETED','CANCELLED')),
+        epic varchar(100),
+        title varchar(200) not null,
+        acceptance_criteria TEXT,
+        created_by varchar(255),
+        description TEXT,
+        updated_by varchar(255),
+        primary key (id)
+    )
+2026-01-03T16:29:37.580+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    alter table if exists auth.role_permissions 
+       add constraint FKegdk29eiy7mdtefy5c7eirr6e 
+       foreign key (permission_id) 
+       references auth.permissions
+2026-01-03T16:29:37.589+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    alter table if exists chat.chat_messages 
+       add constraint FK3cpkdtwdxndrjhrx3gt9q5ux9 
+       foreign key (session_id) 
+       references chat.chat_sessions
+2026-01-03T16:29:37.590+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    alter table if exists project.deliverables 
+       add constraint FKcd22r03cehbp5p2jn2mkv34oh 
+       foreign key (phase_id) 
+       references project.phases
+2026-01-03T16:29:37.592+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    alter table if exists project.kpis 
+       add constraint FKnh1feih4rmq1l3scneefwlh66 
+       foreign key (phase_id) 
+       references project.phases
+2026-01-03T16:29:37.593+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    alter table if exists project.phase_gates 
+       add constraint FK7uks9k66rxkyycybmcelu3qgy 
+       foreign key (phase_id) 
+       references project.phases
+2026-01-03T16:29:37.594+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    alter table if exists project.phases 
+       add constraint FKp0vs31guyj5itugskrstnrm4y 
+       foreign key (project_id) 
+       references project.projects
+2026-01-03T16:29:37.596+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    alter table if exists task.tasks 
+       add constraint FKqgwaiqxymudd3ega3in76ydsi 
+       foreign key (column_id) 
+       references task.kanban_columns
+2026-01-03T16:29:37.598+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    alter table if exists task.user_stories 
+       add constraint FKhs7f69eg9suwnn7h81anvhutk 
+       foreign key (sprint_id) 
+       references task.sprints
+2026-01-03T16:29:37.603+09:00  INFO 13544 --- [pms-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-03T16:29:38.484+09:00  INFO 13544 --- [pms-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-01-03T16:29:39.929+09:00  WARN 13544 --- [pms-backend] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-01-03T16:29:40.496+09:00  INFO 13544 --- [pms-backend] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoint(s) beneath base path '/actuator'
+2026-01-03T16:29:40.597+09:00  INFO 13544 --- [pms-backend] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@2724ae48, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@5f9d27b6, org.springframework.security.web.context.SecurityContextHolderFilter@765569a4, org.springframework.security.web.header.HeaderWriterFilter@1b904438, org.springframework.web.filter.CorsFilter@3205ea73, org.springframework.web.filter.CorsFilter@4a9cd434, org.springframework.security.web.authentication.logout.LogoutFilter@509520a5, com.insuretech.pms.common.security.JwtAuthenticationFilter@44fcf2b2, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@1383f7f2, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@55fc61d8, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@48c865c1, org.springframework.security.web.session.SessionManagementFilter@c4231e8, org.springframework.security.web.access.ExceptionTranslationFilter@72ef3f9b, org.springframework.security.web.access.intercept.AuthorizationFilter@69117714]
+2026-01-03T16:29:41.758+09:00  INFO 13544 --- [pms-backend] [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:testdb'
+2026-01-03T16:29:41.901+09:00  INFO 13544 --- [pms-backend] [           main] com.insuretech.pms.PmsApplicationTests   : Started PmsApplicationTests in 8.61 seconds (process running for 9.482)
+2026-01-03T16:29:42.037+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        count(*) 
+    from
+        auth.permissions p1_0
+2026-01-03T16:29:42.071+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        p1_0.id,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.116+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        p1_0.id,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.117+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        p1_0.id,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.118+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        p1_0.id,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.121+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        p1_0.id,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.122+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        p1_0.id,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.122+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        p1_0.id,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.123+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        p1_0.id,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.124+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        p1_0.id,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.125+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        p1_0.id,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.125+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        p1_0.id,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.126+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        p1_0.id,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.127+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        p1_0.id,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.148+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.permissions
+        (action, category, created_at, created_by, description, name, resource, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.175+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.permissions
+        (action, category, created_at, created_by, description, name, resource, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.176+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.permissions
+        (action, category, created_at, created_by, description, name, resource, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.177+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.permissions
+        (action, category, created_at, created_by, description, name, resource, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.178+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.permissions
+        (action, category, created_at, created_by, description, name, resource, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.179+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.permissions
+        (action, category, created_at, created_by, description, name, resource, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.179+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.permissions
+        (action, category, created_at, created_by, description, name, resource, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.180+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.permissions
+        (action, category, created_at, created_by, description, name, resource, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.180+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.permissions
+        (action, category, created_at, created_by, description, name, resource, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.181+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.permissions
+        (action, category, created_at, created_by, description, name, resource, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.181+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.permissions
+        (action, category, created_at, created_by, description, name, resource, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.182+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.permissions
+        (action, category, created_at, created_by, description, name, resource, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.183+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.permissions
+        (action, category, created_at, created_by, description, name, resource, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.194+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        null,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.196+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        null,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.197+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        null,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.198+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        null,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.200+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        null,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.202+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        null,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.203+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        null,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.203+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        null,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.205+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        null,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.206+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        null,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.209+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        null,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.210+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        null,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.217+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        null,
+        p1_0.action,
+        p1_0.category,
+        p1_0.created_at,
+        p1_0.created_by,
+        p1_0.description,
+        p1_0.name,
+        p1_0.resource,
+        p1_0.updated_at,
+        p1_0.updated_by 
+    from
+        auth.permissions p1_0 
+    where
+        p1_0.id=?
+2026-01-03T16:29:42.222+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.223+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.224+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.224+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.225+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.226+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.227+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.228+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.229+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.230+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.231+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.232+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.232+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.233+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.234+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.235+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.235+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.236+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.236+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.237+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.238+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.238+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.239+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.239+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.240+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.240+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.241+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.241+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.242+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.243+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.244+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.244+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.245+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.245+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.246+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.247+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.248+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.249+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.role_permissions
+        (created_at, created_by, granted, permission_id, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.253+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        count(*) 
+    from
+        auth.users u1_0
+2026-01-03T16:29:42.254+09:00  INFO 13544 --- [pms-backend] [           main] c.i.pms.common.init.DataInitializer      : Initializing demo users...
+2026-01-03T16:29:42.315+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.department,
+        u1_0.email,
+        u1_0.last_login_at,
+        u1_0.name,
+        u1_0.password,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.updated_by 
+    from
+        auth.users u1_0 
+    where
+        u1_0.id=?
+2026-01-03T16:29:42.321+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.users
+        (active, created_at, created_by, department, email, last_login_at, name, password, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.377+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.department,
+        u1_0.email,
+        u1_0.last_login_at,
+        u1_0.name,
+        u1_0.password,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.updated_by 
+    from
+        auth.users u1_0 
+    where
+        u1_0.id=?
+2026-01-03T16:29:42.378+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.users
+        (active, created_at, created_by, department, email, last_login_at, name, password, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.434+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.department,
+        u1_0.email,
+        u1_0.last_login_at,
+        u1_0.name,
+        u1_0.password,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.updated_by 
+    from
+        auth.users u1_0 
+    where
+        u1_0.id=?
+2026-01-03T16:29:42.435+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.users
+        (active, created_at, created_by, department, email, last_login_at, name, password, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.491+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.department,
+        u1_0.email,
+        u1_0.last_login_at,
+        u1_0.name,
+        u1_0.password,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.updated_by 
+    from
+        auth.users u1_0 
+    where
+        u1_0.id=?
+2026-01-03T16:29:42.492+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.users
+        (active, created_at, created_by, department, email, last_login_at, name, password, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.548+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.department,
+        u1_0.email,
+        u1_0.last_login_at,
+        u1_0.name,
+        u1_0.password,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.updated_by 
+    from
+        auth.users u1_0 
+    where
+        u1_0.id=?
+2026-01-03T16:29:42.549+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.users
+        (active, created_at, created_by, department, email, last_login_at, name, password, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.604+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.department,
+        u1_0.email,
+        u1_0.last_login_at,
+        u1_0.name,
+        u1_0.password,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.updated_by 
+    from
+        auth.users u1_0 
+    where
+        u1_0.id=?
+2026-01-03T16:29:42.606+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.users
+        (active, created_at, created_by, department, email, last_login_at, name, password, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.661+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.department,
+        u1_0.email,
+        u1_0.last_login_at,
+        u1_0.name,
+        u1_0.password,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.updated_by 
+    from
+        auth.users u1_0 
+    where
+        u1_0.id=?
+2026-01-03T16:29:42.662+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.users
+        (active, created_at, created_by, department, email, last_login_at, name, password, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.717+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.created_at,
+        u1_0.created_by,
+        u1_0.department,
+        u1_0.email,
+        u1_0.last_login_at,
+        u1_0.name,
+        u1_0.password,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.updated_by 
+    from
+        auth.users u1_0 
+    where
+        u1_0.id=?
+2026-01-03T16:29:42.718+09:00 DEBUG 13544 --- [pms-backend] [           main] org.hibernate.SQL                        : 
+    insert 
+    into
+        auth.users
+        (active, created_at, created_by, department, email, last_login_at, name, password, role, updated_at, updated_by, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-01-03T16:29:42.719+09:00  INFO 13544 --- [pms-backend] [           main] c.i.pms.common.init.DataInitializer      : Demo users created successfully
+]]></system-out>
+    <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.10/byte-buddy-agent-1.14.10.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+  </testcase>
+</testsuite>

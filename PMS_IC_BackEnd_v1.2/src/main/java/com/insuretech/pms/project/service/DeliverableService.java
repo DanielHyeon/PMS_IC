@@ -6,6 +6,7 @@ import com.insuretech.pms.project.entity.Deliverable;
 import com.insuretech.pms.project.entity.Phase;
 import com.insuretech.pms.project.repository.DeliverableRepository;
 import com.insuretech.pms.project.repository.PhaseRepository;
+import com.insuretech.pms.rag.service.RAGIndexingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +22,9 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -32,6 +35,7 @@ public class DeliverableService {
 
     private final DeliverableRepository deliverableRepository;
     private final PhaseRepository phaseRepository;
+    private final RAGIndexingService ragIndexingService;
 
     @Value("${pms.storage.deliverables:uploads/deliverables}")
     private String deliverableStoragePath;
@@ -81,6 +85,27 @@ public class DeliverableService {
 
         Deliverable saved = deliverableRepository.save(deliverable);
         log.info("Deliverable uploaded: {} (phase={})", saved.getId(), phaseId);
+
+        // RAG 시스템에 문서 인덱싱 (비동기로 처리하는 것이 이상적이지만 간단하게 동기로 처리)
+        try {
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put("deliverable_id", saved.getId());
+            metadata.put("deliverable_name", saved.getName());
+            metadata.put("phase_id", phaseId);
+            metadata.put("type", saved.getType().toString());
+            metadata.put("uploaded_by", uploadedBy != null ? uploadedBy : "unknown");
+
+            boolean indexed = ragIndexingService.indexFile(saved.getId(), targetPath, metadata);
+            if (indexed) {
+                log.info("Deliverable indexed to RAG successfully: {}", saved.getId());
+            } else {
+                log.warn("Failed to index deliverable to RAG: {}", saved.getId());
+            }
+        } catch (Exception e) {
+            log.error("Error indexing deliverable to RAG: {}", saved.getId(), e);
+            // RAG 인덱싱 실패는 전체 프로세스를 실패시키지 않음
+        }
+
         return DeliverableDto.from(saved);
     }
 

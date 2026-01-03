@@ -20,3 +20,10 @@ services:
     command: npm run dev -- --host 0.0.0.0
     stdin_open: true
     tty: true
+
+  llm-service:
+    environment:
+      MODEL_PATH: /app/models/LFM2-2.6B-Uncensored-X64.i1-Q6_K.gguf
+      MAX_TOKENS: 8192
+    volumes:
+      - ./ragdata:/app/ragdata:ro

@@ -1,0 +1,160 @@
+RAG 시스템 구현 - 생성/수정된 파일 목록
+============================================
+
+## 새로 생성된 파일
+
+### LLM 서비스 (Python)
+1. llm-service/rag_service.py
+   - RAG 핵심 로직 (문서 임베딩, 검색, 텍스트 추출)
+
+### 백엔드 (Java)
+2. PMS_IC_BackEnd_v1.2/src/main/java/com/insuretech/pms/rag/service/RAGIndexingService.java
+   - 문서 인덱싱 서비스 (PDF/Word/Excel 처리)
+
+3. PMS_IC_BackEnd_v1.2/src/main/java/com/insuretech/pms/rag/service/RAGSearchService.java
+   - 문서 검색 서비스
+
+### 문서
+4. RAG_시스템_가이드.md
+   - RAG 시스템 상세 사용 가이드
+
+5. RAG_구현_요약.md
+   - RAG 구현 완료 요약
+
+6. RAG_구현_파일목록.txt
+   - 이 파일 (구현 파일 목록)
+
+### 테스트 스크립트
+7. test-rag-system.sh
+   - RAG 시스템 통합 테스트 스크립트
+
+
+## 수정된 파일
+
+### 인프라
+8. docker-compose.yml
+   - ChromaDB 서비스 추가
+   - LLM 서비스에 ChromaDB 환경변수 추가
+   - 서비스 의존성 설정
+
+### LLM 서비스 (Python)
+9. llm-service/requirements.txt
+   - chromadb, sentence-transformers, pypdf, python-docx, openpyxl 추가
+
+10. llm-service/app.py
+    - RAGService 통합
+    - 문서 관리 API 추가 (POST /api/documents, DELETE /api/documents/<id>, GET /api/documents/stats, POST /api/documents/search)
+    - 채팅 시 자동 RAG 검색 통합
+    - 한국어 전용 RAG 프롬프트 적용
+
+### 백엔드 (Java)
+11. PMS_IC_BackEnd_v1.2/pom.xml
+    - Apache PDFBox 3.0.1 추가
+    - Apache POI 5.2.5 추가
+
+12. PMS_IC_BackEnd_v1.2/src/main/java/com/insuretech/pms/project/service/DeliverableService.java
+    - RAGIndexingService 주입
+    - 파일 업로드 시 자동 RAG 인덱싱 로직 추가
+
+13. PMS_IC_BackEnd_v1.2/src/main/java/com/insuretech/pms/chat/service/AIChatClient.java
+    - RAGSearchService 주입
+    - 채팅 시 자동 RAG 검색 수행
+    - 검색 결과를 LLM에 전달
+
+### 문서
+14. README.md
+    - ChromaDB 서비스 정보 추가
+    - RAG 시스템 가이드 링크 추가
+    - 아키텍처 다이어그램 업데이트
+
+
+## 파일 구조
+
+```
+/wp/PMS_IC/
+├── docker-compose.yml                         [수정]
+├── README.md                                  [수정]
+├── RAG_시스템_가이드.md                      [신규]
+├── RAG_구현_요약.md                          [신규]
+├── RAG_구현_파일목록.txt                     [신규]
+├── test-rag-system.sh                         [신규]
+│
+├── llm-service/
+│   ├── app.py                                 [수정]
+│   ├── rag_service.py                         [신규]
+│   └── requirements.txt                       [수정]
+│
+└── PMS_IC_BackEnd_v1.2/
+    ├── pom.xml                                [수정]
+    └── src/main/java/com/insuretech/pms/
+        ├── rag/service/
+        │   ├── RAGIndexingService.java        [신규]
+        │   └── RAGSearchService.java          [신규]
+        ├── project/service/
+        │   └── DeliverableService.java        [수정]
+        └── chat/service/
+            └── AIChatClient.java              [수정]
+```
+
+
+## 코드 통계
+
+### 새로 작성한 코드
+- Python: ~450 줄 (rag_service.py + app.py 수정)
+- Java: ~350 줄 (RAGIndexingService.java + RAGSearchService.java + 수정)
+- 문서: ~800 줄 (가이드 + 요약 + 스크립트)
+
+### 총 변경 사항
+- 신규 파일: 7개
+- 수정 파일: 7개
+- 총 코드 라인: ~1,600 줄
+
+
+## 주요 기술 스택
+
+### 벡터 검색
+- ChromaDB (벡터 데이터베이스)
+- SentenceTransformers (임베딩 모델)
+  - paraphrase-multilingual-MiniLM-L12-v2
+
+### 문서 처리
+- Apache PDFBox 3.0.1 (PDF)
+- Apache POI 5.2.5 (Word, Excel)
+- pypdf 3.17.4 (Python PDF)
+- python-docx 1.1.0 (Python Word)
+- openpyxl 3.1.2 (Python Excel)
+
+### LLM
+- Gemma 3 12B (텍스트 생성)
+- llama-cpp-python (모델 실행)
+
+
+## 배포 시 필요한 사항
+
+1. ChromaDB 데이터 볼륨 백업
+   - docker volume: chromadb_data
+
+2. 환경 변수 설정
+   - CHROMA_HOST=chromadb
+   - CHROMA_PORT=8000
+   - MODEL_PATH=/app/models/google.gemma-3-12b-pt.Q6_K.gguf
+
+3. 메모리 요구사항
+   - LLM 서비스: 최소 10GB RAM (Gemma 3 12B + 임베딩 모델)
+   - ChromaDB: 최소 2GB RAM
+
+4. 디스크 요구사항
+   - 모델 파일: ~7GB (Gemma 3 12B)
+   - ChromaDB 데이터: 문서 수에 따라 증가 (1,000 문서 기준 ~500MB)
+
+
+## 테스트 체크리스트
+
+- [✓] ChromaDB 서비스 시작
+- [✓] LLM 서비스 RAG 모듈 로딩
+- [✓] 테스트 문서 인덱싱
+- [✓] RAG 검색 기능
+- [✓] 통합 채팅 (RAG + LLM)
+- [✓] 파일 업로드 자동 인덱싱
+- [✓] PDF/Word/Excel 텍스트 추출
+

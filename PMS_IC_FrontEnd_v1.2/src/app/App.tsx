@@ -10,7 +10,8 @@ import AIAssistant from './components/AIAssistant';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import LoginScreen from './components/LoginScreen';
-import { LayoutDashboard, GitBranch, Kanban, ListTodo, Users, Settings } from 'lucide-react';
+import Settings from './components/Settings';
+import { LayoutDashboard, GitBranch, Kanban, ListTodo, Users, Settings as SettingsIcon } from 'lucide-react';
 
 export type View = 'dashboard' | 'phases' | 'kanban' | 'backlog' | 'roles' | 'settings';
 
@@ -63,14 +64,14 @@ export default function App() {
     { id: 'kanban' as View, label: '칸반 보드', icon: Kanban },
     { id: 'backlog' as View, label: '백로그 관리', icon: ListTodo },
     { id: 'roles' as View, label: '권한 관리', icon: Users },
-    { id: 'settings' as View, label: '설정', icon: Settings },
+    { id: 'settings' as View, label: '설정', icon: SettingsIcon },
   ];
 
   const availableMenus = currentUser ? getAvailableMenus(currentUser.role) : [];
   const menuItems = allMenuItems.filter((item) => availableMenus.includes(item.id));
 
   // 역할별 AI 어시스턴트 접근 권한
-  const canUseAI = currentUser?.role && ['sponsor', 'pmo_head', 'pm', 'developer', 'qa', 'business_analyst'].includes(currentUser.role);
+  const canUseAI = !!currentUser?.role && ['sponsor', 'pmo_head', 'pm', 'developer', 'qa', 'business_analyst'].includes(currentUser.role);
 
   const renderContent = () => {
     switch (currentView) {
@@ -84,6 +85,8 @@ export default function App() {
         return <BacklogManagement userRole={currentUser?.role || 'pm'} />;
       case 'roles':
         return <RoleManagement userRole={currentUser?.role || 'pm'} />;
+      case 'settings':
+        return <Settings userRole={currentUser?.role || 'pm'} />;
       default:
         return <Dashboard userRole={currentUser?.role || 'pm'} />;
     }

@@ -115,6 +115,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
         const user = demoUsers[email.toLowerCase()];
 
         if (user && user.password === password) {
+          apiService.setToken('demo-token-' + email);
           onLogin(user.userInfo);
         } else {
           setError('이메일 또는 비밀번호가 올바르지 않습니다.');
@@ -126,6 +127,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       const user = demoUsers[email.toLowerCase()];
 
       if (user && user.password === password) {
+        apiService.setToken('demo-token-' + email);
         onLogin(user.userInfo);
       } else {
         setError('이메일 또는 비밀번호가 올바르지 않습니다.');
@@ -134,13 +136,32 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     }
   };
 
-  const handleQuickLogin = (userEmail: string) => {
+  const handleQuickLogin = async (userEmail: string) => {
     const user = demoUsers[userEmail];
     if (user) {
       setIsLoading(true);
-      setTimeout(() => {
-        onLogin(user.userInfo);
-      }, 800);
+      setEmail(userEmail);
+      setPassword(user.password);
+
+      try {
+        // 실제 백엔드 로그인 시도
+        const response = await apiService.login(userEmail, user.password);
+
+        if (response.token && response.user) {
+          apiService.setToken(response.token);
+          onLogin(response.user);
+        } else {
+          // Fallback: Mock 토큰 설정
+          apiService.setToken('demo-token-' + userEmail);
+          onLogin(user.userInfo);
+        }
+      } catch (err) {
+        // API 실패 시에도 Mock 토큰 설정
+        apiService.setToken('demo-token-' + userEmail);
+        setTimeout(() => {
+          onLogin(user.userInfo);
+        }, 800);
+      }
     }
   };
 

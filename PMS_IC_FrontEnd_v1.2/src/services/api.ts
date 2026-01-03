@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 export class ApiService {
   private token: string | null = null;
@@ -6,18 +6,30 @@ export class ApiService {
 
   constructor() {
     this.token = localStorage.getItem('auth_token');
-    this.checkBackendAvailability();
+    // 헬스 체크를 비동기로 실행하여 앱 시작을 막지 않음
+    this.checkBackendAvailability().catch(() => {
+      // 헬스 체크 실패는 조용히 처리 (실제 API 호출 시 다시 시도)
+    });
   }
 
   private async checkBackendAvailability() {
     try {
-      const response = await fetch(API_BASE_URL.replace('/api', '/health'), {
+      const healthUrl = API_BASE_URL.replace('/api', '') + '/actuator/health';
+      const response = await fetch(healthUrl, {
         method: 'GET',
-        signal: AbortSignal.timeout(3000),
+        signal: AbortSignal.timeout(5000), // 타임아웃을 5초로 증가
       });
       this.useMockData = !response.ok;
+      if (response.ok) {
+        console.log('Backend connected successfully');
+      } else {
+        console.warn('Backend health check failed, will retry on actual API calls');
+        this.useMockData = true;
+      }
     } catch (error) {
-      console.warn('Backend not available, using mock data');
+      // 헬스 체크 실패는 정상적인 상황일 수 있음 (백엔드가 아직 시작 중일 수 있음)
+      // 실제 API 호출 시 다시 시도하므로 여기서는 조용히 처리
+      console.debug('Backend health check not available, will retry on API calls:', error);
       this.useMockData = true;
     }
   }
@@ -37,11 +49,7 @@ export class ApiService {
     options: RequestInit = {},
     mockData: T
   ): Promise<T> {
-    if (this.useMockData) {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      return mockData;
-    }
-
+    // Always try real API first, even if health check failed
     try {
       const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
       const headers: HeadersInit = {
@@ -60,16 +68,30 @@ export class ApiService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
+      // If successful, mark backend as available
+      if (this.useMockData) {
+        console.log('Backend is now available');
+        this.useMockData = false;
+      }
+
       return await response.json();
     } catch (error) {
-      console.warn(`API call failed for ${endpoint}, using mock data:`, error);
+      // 네트워크 에러인 경우에만 경고, 그 외는 조용히 처리
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        console.warn(`API call failed for ${endpoint}: Backend may not be running. Using mock data.`);
+      } else if (error instanceof Error && error.name === 'TimeoutError') {
+        console.warn(`API call timeout for ${endpoint}: Backend may be slow. Using mock data.`);
+      } else {
+        console.debug(`API call failed for ${endpoint}, using mock data:`, error);
+      }
       this.useMockData = true;
+      await new Promise((resolve) => setTimeout(resolve, 300));
       return mockData;
     }
   }
 
   async login(email: string, password: string) {
-    return this.fetchWithFallback(
+    const response = await this.fetchWithFallback(
       '/auth/login',
       {
         method: 'POST',
@@ -86,6 +108,13 @@ export class ApiService {
         },
       }
     );
+
+    // 백엔드 응답에서 data 필드 추출
+    if (response && typeof response === 'object' && 'data' in response) {
+      return (response as any).data;
+    }
+
+    return response as any;
   }
 
   async getDashboardStats() {
@@ -476,28 +505,54 @@ export class ApiService {
   }
 
   async sendChatMessage(params: { sessionId?: string | null; message: string }) {
-    const response = await this.fetchWithFallback('/chat/message', {
-      method: 'POST',
-      body: JSON.stringify({
-        sessionId: params.sessionId ?? null,
-        message: params.message,
-      }),
-    }, {
-      sessionId: params.sessionId ?? 'mock-session',
-      reply: '안녕하세요! PMS AI 어시스턴트입니다. 현재 Mock 모드로 동작 중입니다.',
-      confidence: 0.95,
-      suggestions: [
-        '프로젝트 진행률 확인',
-        '할당된 태스크 조회',
-        '이번 스프린트 목표 확인',
-      ],
-    });
+    // Chat API needs longer timeout for LLM response
+    try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(this.token && { Authorization: `Bearer ${this.token}` }),
+      };
 
-    if (response && typeof response === 'object' && 'data' in response) {
-      return (response as any).data;
+      const response = await fetch(`${API_BASE_URL}/chat/message`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          sessionId: params.sessionId ?? null,
+          message: params.message,
+        }),
+        signal: AbortSignal.timeout(120000), // 120 seconds for LLM response
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // If successful, mark backend as available
+      if (this.useMockData) {
+        console.log('Backend is now available');
+        this.useMockData = false;
+      }
+
+      const data = await response.json();
+
+      // Extract data field if present
+      if (data && typeof data === 'object' && 'data' in data) {
+        return data.data;
+      }
+
+      return data;
+    } catch (error) {
+      console.warn('Chat API call failed, using mock data:', error);
+      return {
+        sessionId: params.sessionId ?? 'mock-session',
+        reply: '안녕하세요! PMS AI 어시스턴트입니다. 현재 Mock 모드로 동작 중입니다.',
+        confidence: 0.95,
+        suggestions: [
+          '프로젝트 진행률 확인',
+          '할당된 태스크 조회',
+          '이번 스프린트 목표 확인',
+        ],
+      };
     }
-
-    return response as any;
   }
 }
 
