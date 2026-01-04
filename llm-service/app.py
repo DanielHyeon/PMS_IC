@@ -6,7 +6,7 @@ llama-cpp-python을 사용하여 GGUF 모델을 실행합니다.
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from llama_cpp import Llama
-from rag_service import RAGService
+from rag_service_qdrant import RAGServiceQdrant  # Qdrant 기반 RAG 서비스 사용
 from chat_workflow import ChatWorkflow
 import os
 import logging
@@ -58,12 +58,15 @@ def load_model(model_path=None):
 
             # 새 모델 로드
             logger.info(f"Initializing Llama model: {model_path}")
+            n_ctx = int(os.getenv("LLM_N_CTX", "4096"))
+            n_threads = int(os.getenv("LLM_N_THREADS", "6"))
+            n_gpu_layers = int(os.getenv("LLM_N_GPU_LAYERS", "0"))
             llm = Llama(
                 model_path=model_path,
-                n_ctx=4096,  # Gemma 3는 더 긴 컨텍스트 지원 (최대 8192)
-                n_threads=6,  # Gemma 3 12B는 더 많은 스레드 활용 가능
+                n_ctx=n_ctx,  # Gemma 3는 더 긴 컨텍스트 지원 (최대 8192)
+                n_threads=n_threads,  # Gemma 3 12B는 더 많은 스레드 활용 가능
                 verbose=True,  # 디버깅을 위해 True로 변경
-                n_gpu_layers=0  # CPU 사용 (GPU 없을 경우)
+                n_gpu_layers=n_gpu_layers  # GPU 사용 시 양수 또는 -1
             )
             current_model_path = model_path
             logger.info(f"Model loaded successfully: {model_path}")
@@ -78,9 +81,9 @@ def load_model(model_path=None):
 
     if rag_service is None:
         try:
-            logger.info("Loading RAG service...")
-            rag_service = RAGService()
-            logger.info("RAG service loaded successfully")
+            logger.info("Loading RAG service with Qdrant (MinerU-based)...")
+            rag_service = RAGServiceQdrant()
+            logger.info("RAG service with Qdrant loaded successfully")
         except Exception as e:
             logger.error(f"Failed to load RAG service: {e}", exc_info=True)
             # RAG 서비스 실패는 치명적이지 않음
@@ -198,7 +201,7 @@ def chat():
         }), 500
 
 
-def chat_legacy(message: str, context: list, model: Llama, rag: RAGService, retrieved_docs: list = None):
+def chat_legacy(message: str, context: list, model: Llama, rag: RAGServiceQdrant, retrieved_docs: list = None):
     """레거시 채팅 처리 (LangGraph 없을 때)"""
     try:
         # RAG 검색
@@ -560,9 +563,9 @@ def change_model():
             # RAG 서비스 확인
             if rag_service is None:
                 try:
-                    logger.info("Loading RAG service...")
-                    rag_service = RAGService()
-                    logger.info("RAG service loaded successfully")
+                    logger.info("Loading RAG service with Qdrant...")
+                    rag_service = RAGServiceQdrant()
+                    logger.info("RAG service with Qdrant loaded successfully")
                 except Exception as e:
                     logger.error(f"Failed to load RAG service: {e}", exc_info=True)
                     rag_service = None
@@ -669,4 +672,3 @@ def get_available_models():
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8000"))
     app.run(host="0.0.0.0", port=port, debug=False)
-

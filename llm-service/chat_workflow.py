@@ -3,12 +3,20 @@ LangGraph 기반 채팅 워크플로우
 RAG와 일반 LLM을 지능적으로 라우팅
 """
 
-from typing import TypedDict, Literal, List, Optional
+from typing import TypedDict, Literal, List, Optional, Union
 from langgraph.graph import StateGraph, END
 from llama_cpp import Llama
-from rag_service import RAGService
 import logging
 import re
+
+# RAG 서비스 임포트 (타입 호환성)
+try:
+    from rag_service_qdrant import RAGServiceQdrant as RAGService
+except ImportError:
+    try:
+        from rag_service import RAGService
+    except ImportError:
+        RAGService = None
 
 logger = logging.getLogger(__name__)
 
@@ -271,7 +279,7 @@ class ChatWorkflow:
                 # LLM 추론
                 response = self.llm(
                     prompt,
-                    max_tokens=256,
+                    max_tokens=8182,
                     temperature=0.7,
                     top_p=0.9,
                     stop=["<end_of_turn>", "<start_of_turn>", "</s>", "<|im_end|>"],
@@ -281,8 +289,14 @@ class ChatWorkflow:
 
                 reply = response["choices"][0]["text"].strip()
 
+                # 원본 응답 로깅 (디버깅용)
+                logger.info(f"Raw model response: {repr(reply)}")
+
                 # 후처리
                 reply = self._clean_response(reply)
+
+                # 클리닝 후 응답 로깅
+                logger.info(f"Cleaned response: {repr(reply)}")
                 
                 # 잘못된 모델 이름이 포함되어 있는지 추가 검증
                 wrong_names = ["니콜라스", "nicolas", "알렉스", "alex", "사라", "sara", 
@@ -370,70 +384,45 @@ class ChatWorkflow:
             else:
                 model_name = "로컬 LLM"
         
-        system_prompt = f"""당신은 정확하고 도움이 되는 한국어 AI 어시스턴트입니다.
-모든 답변은 한국어로만 작성하세요. 영문/외국어를 사용하지 마세요.
+        system_prompt = f"""당신은 친절하고 도움이 되는 한국어 AI 어시스턴트입니다.
+항상 한국어로 자연스럽게 답변하세요.
 
-=== 매우 중요: 모델 정보 ===
-당신의 정확한 모델 이름은 "{model_name}"입니다.
+사용자의 질문에는 짧지 않게 3~6문장으로 답변하세요.
+핵심 정의 → 목적/배경 → 간단한 예시 순서로 설명하세요.
+모르는 내용은 솔직하게 "모르겠습니다"라고 말하세요."""
 
-절대로 다음을 말하지 마세요:
-- GPT-4, ChatGPT, Claude, Gemini, PaLM 등 다른 모델
-- "니콜라스", "알렉스", "사라" 등 가상의 이름이나 사람 이름
-- 학습 데이터에 있는 다른 모델 이름
-- 자신을 사람이라고 소개
-
-모델 이름을 물어보면 반드시 이렇게만 답변하세요:
-"저는 {model_name} 모델입니다."
-또는
-"제 모델 이름은 {model_name}입니다."
-
-다른 어떤 이름도 말하지 마세요.
-
-사용 가능한 도구들:
-{tools_json_schema}
-
-사용 지침:
-1. 필요한 정보만 도구를 사용하세요
-2. 도구를 사용할 때는 반드시 지정된 JSON 포맷으로 정확하게 출력하세요
-3. 도구 결과를 받은 후에는 한국어로 자연스럽게 최종 답변을 작성하세요
-4. 모르는 내용은 솔직하게 "모르겠습니다"라고 말하세요
-5. 모델 이름을 물어보면 반드시 "{model_name}"라고만 답변하세요"""
-
-        prompt_parts.append("<start_of_turn>system")
+        # LFM2 모델은 <|im_start|>와 <|im_end|> 토큰 사용
+        prompt_parts.append("<|im_start|>system")
         prompt_parts.append(system_prompt)
-        prompt_parts.append("<end_of_turn>")
+        prompt_parts.append("<|im_end|>")
 
         # 컨텍스트 메시지 (최근 5개)
         for msg in context[-5:]:
             role = msg.get("role", "user")
             content = msg.get("content", "")
             if role == "user":
-                prompt_parts.append("<start_of_turn>user")
+                prompt_parts.append("<|im_start|>user")
                 prompt_parts.append(content)
-                prompt_parts.append("<end_of_turn>")
+                prompt_parts.append("<|im_end|>")
             elif role == "assistant":
-                prompt_parts.append("<start_of_turn>model")
+                prompt_parts.append("<|im_start|>assistant")
                 prompt_parts.append(content)
-                prompt_parts.append("<end_of_turn>")
+                prompt_parts.append("<|im_end|>")
 
         # 현재 질문과 RAG 문서
-        prompt_parts.append("<start_of_turn>user")
+        prompt_parts.append("<|im_start|>user")
 
         if retrieved_docs and len(retrieved_docs) > 0:
-            prompt_parts.append("현재 질문: " + message)
-            prompt_parts.append("")
-            prompt_parts.append("관련 문서 (RAG):")
+            prompt_parts.append(message)
+            prompt_parts.append("\n관련 문서:")
             for i, doc in enumerate(retrieved_docs, 1):
                 doc_content = doc if isinstance(doc, str) else doc.get('content', str(doc))
                 prompt_parts.append(f"{i}. {doc_content}")
         else:
-            prompt_parts.append(f"현재 질문: {message}")
-            prompt_parts.append("")
-            prompt_parts.append("관련 문서 (RAG):")
-            prompt_parts.append("없음")
+            prompt_parts.append(message)
 
-        prompt_parts.append("<end_of_turn>")
-        prompt_parts.append("<start_of_turn>model")
+        prompt_parts.append("<|im_end|>")
+        prompt_parts.append("<|im_start|>assistant")
 
         return "\n".join(prompt_parts)
 
@@ -559,10 +548,6 @@ class ChatWorkflow:
             elif re.search(r"제공된 정보로.*?답변했습니다", lower) or re.search(r"이제 사용자.*?요청대로", lower) or re.search(r"요청.*?한국어로.*?제공", lower):
                 stripped = ""
             
-            # 빈 줄이나 질문으로 끝나는 줄 제거
-            if stripped.endswith("?"):
-                stripped = ""
-            
             if stripped:
                 cleaned_lines.append(stripped)
         
@@ -587,7 +572,7 @@ class ChatWorkflow:
             if re.search(r"(llama forge model|gemma|lfm2|로컬 llm)", stripped, re.IGNORECASE) or re.match(r"^=+$", stripped):
                 start_idx = i + 1
             # 사용자 질문처럼 보이는 줄도 건너뛰기 (질문으로 끝나는 경우)
-            elif stripped.endswith("?") or stripped.endswith("주세요") or stripped.endswith("해주세요"):
+            elif (stripped.endswith("?") or stripped.endswith("주세요") or stripped.endswith("해주세요")) and i < len(lines) - 1:
                 start_idx = i + 1
             else:
                 break

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { X, Send, Bot, Sparkles, TrendingUp, FileText, AlertTriangle } from 'lucide-react';
 import { UserRole } from '../App';
 import { apiService } from '../../services/api';
@@ -28,6 +28,15 @@ export default function AIAssistant({ onClose, userRole }: { onClose: () => void
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!messagesContainerRef.current) return;
+    messagesContainerRef.current.scrollTo({
+      top: messagesContainerRef.current.scrollHeight,
+      behavior: 'smooth',
+    });
+  }, [messages, isTyping]);
 
   const suggestedPrompts: SuggestedPrompt[] = [
     {
@@ -140,7 +149,7 @@ export default function AIAssistant({ onClose, userRole }: { onClose: () => void
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
           <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
