@@ -1,0 +1,27 @@
+{
+  "name": "pms_ic",
+  "version": "1.0.0",
+  "description": "InsureTech 프로젝트 관리 시스템 with 로컬 LLM 챗봇",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DanielHyeon/PMS_IC.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/DanielHyeon/PMS_IC/issues"
+  },
+  "homepage": "https://github.com/DanielHyeon/PMS_IC#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {}
+}

@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker-compose down:*)",
+      "Bash(docker volume rm:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(curl:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker-compose build:*)",
+      "Bash(docker stop:*)",
+      "Bash(docker rm:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBpbnN1cmUuY29tIiwiaWF0IjoxNzY3MzcxNTkwLCJleHAiOjE3Njc0NTc5OTB9.S-VuIdtSlRfJnVy1mL2zgvC9MQmaC0wwI0x3T7lULxw\")",
+      "Bash(python3:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(docker-compose stop:*)",
+      "Bash(docker-compose rm:*)",
+      "Bash(chmod:*)",
+      "Bash(ls:*)",
+      "Bash(docker logs:*)",
+      "Bash(find:*)"
+    ]
+  }
+}

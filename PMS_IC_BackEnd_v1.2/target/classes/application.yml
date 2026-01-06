@@ -63,52 +63,13 @@ jwt:
 # AI Service
 ai:
   service:
-    url: ${AI_TEAM_API_URL:http://localhost:8000}
-    mock-url: ${AI_TEAM_MOCK_URL:http://localhost:1080}
+    url: ${AI_TEAM_API_URL:http://localhost:11434}
+    mock-url: ${AI_TEAM_MOCK_URL:http://localhost:8000}
     model: ${AI_TEAM_MODEL:llama3}
     timeout: 30000
     retry:
       max-attempts: 3
       delay: 1000
-
-# Resilience4j Configuration
-resilience4j:
-  circuitbreaker:
-    instances:
-      llm-service:
-        registerHealthIndicator: true
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-        waitDurationInOpenState: 10s
-        failureRateThreshold: 50
-        eventConsumerBufferSize: 10
-      rag-service:
-        registerHealthIndicator: true
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-        waitDurationInOpenState: 5s
-        failureRateThreshold: 50
-  retry:
-    instances:
-      llm-service:
-        maxAttempts: 3
-        waitDuration: 1s
-        retryExceptions:
-          - org.springframework.web.reactive.function.client.WebClientException
-          - java.util.concurrent.TimeoutException
-        ignoreExceptions:
-          - com.insuretech.pms.common.exception.CustomException
-      rag-service:
-        maxAttempts: 2
-        waitDuration: 500ms
-  timelimiter:
-    instances:
-      llm-service:
-        timeoutDuration: 30s
 
 # File storage
 pms:

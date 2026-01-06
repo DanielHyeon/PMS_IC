@@ -1,6 +1,5 @@
 package com.insuretech.pms.task.controller;
 
-import com.insuretech.pms.common.exception.CustomException;
 import com.insuretech.pms.task.dto.CreateUserStoryRequest;
 import com.insuretech.pms.task.dto.ReorderUserStoryRequest;
 import com.insuretech.pms.task.dto.UpdateUserStoryRequest;
@@ -28,13 +27,9 @@ public class UserStoryController {
     @GetMapping
     @Operation(summary = "모든 사용자 스토리 조회", description = "프로젝트의 모든 사용자 스토리를 조회합니다")
     public ResponseEntity<List<UserStoryResponse>> getAllStories(
-            @RequestParam(required = false) String projectId,
+            @RequestParam String projectId,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String epic) {
-
-        if (projectId == null || projectId.isBlank()) {
-            throw CustomException.badRequest("projectId는 필수 파라미터입니다.");
-        }
 
         List<UserStoryResponse> stories;
 
