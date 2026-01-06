@@ -123,3 +123,4 @@ package-lock.json
 #LLM 모델
 models/
 *.gguf
+models/*.gguf
