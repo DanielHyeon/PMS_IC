@@ -1,0 +1,41 @@
+# Production Dockerfile for Backend
+# Multi-stage build for optimized image size
+
+FROM eclipse-temurin:17-jdk-alpine AS builder
+WORKDIR /app
+
+# Copy Maven files first for better layer caching
+COPY pom.xml .
+COPY src ./src
+
+# Install Maven and build
+RUN apk add --no-cache maven && \
+    mvn clean package -DskipTests && \
+    mv target/*.jar target/app.jar
+
+# Production runtime stage
+FROM eclipse-temurin:17-jre-alpine
+
+# Add non-root user for security
+RUN addgroup -S spring && adduser -S spring -G spring
+
+WORKDIR /app
+
+# Copy built JAR from builder stage
+COPY --from=builder --chown=spring:spring /app/target/app.jar app.jar
+
+# Switch to non-root user
+USER spring:spring
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", \
+  "-Djava.security.egd=file:/dev/./urandom", \
+  "-XX:+UseContainerSupport", \
+  "-XX:MaxRAMPercentage=75.0", \
+  "-jar", \
+  "app.jar"]

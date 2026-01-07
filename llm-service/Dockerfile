@@ -16,6 +16,9 @@ RUN apt-get update && apt-get install -y \
     cmake \
     curl \
     git \
+    libgl1 \
+    libglib2.0-0 \
+    poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # CUDA stub libs for build-time linking (libcuda.so.1)
@@ -26,7 +29,8 @@ ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs:/usr/local/cuda/lib64:${LD_LIBRA
 # Python 의존성 설치
 COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && python3 -m pip install --no-cache-dir -r requirements.txt
+    && python3 -m pip install --no-cache-dir -r requirements.txt \
+    && python3 -m pip install --no-cache-dir --no-deps "mineru"
 
 # 런타임에서는 실제 CUDA 드라이버 라이브러리를 우선 사용
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/lib/x86_64-linux-gnu
@@ -36,7 +40,11 @@ COPY app.py .
 COPY rag_service.py .
 COPY rag_service_v2.py .
 COPY rag_service_qdrant.py .
+COPY rag_service_neo4j.py .
+COPY rag_service_helix.py .
 COPY document_parser.py .
+COPY pdf_ocr_pipeline.py .
+COPY helix_service.py .
 COPY chat_workflow.py .
 COPY init_rag_mock_data.py .
 COPY init_rag_v2.py .
@@ -44,10 +52,14 @@ COPY init_rag_with_mineru.py .
 COPY init_complete_rag.py .
 COPY load_ragdata_pdfs.py .
 COPY load_ragdata_pdfs_qdrant.py .
+COPY load_ragdata_pdfs_neo4j.py .
+COPY migrate_qdrant_to_neo4j.py .
+COPY benchmark_rag_services.py .
 COPY README.md .
 
 # 모델 디렉토리 생성 (볼륨 마운트로 모델 제공)
-RUN mkdir -p /app/models
+RUN mkdir -p /app/models /models /data /output \
+    && echo '{"models-dir": "/app/models"}' > /root/mineru.json
 
 # 헬스체크를 위한 curl 설치됨
 EXPOSE 8000

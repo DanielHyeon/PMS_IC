@@ -47,19 +47,19 @@ public class AIChatClient {
     }
 
     private ChatResponse callOllama(String message, List<ChatMessage> context) {
-        List<Map<String, String>> messages = new ArrayList<>();
+        // Convert context to the format expected by the LLM service
+        List<Map<String, String>> contextList = new ArrayList<>();
         for (ChatMessage msg : context) {
-            messages.add(Map.of(
+            contextList.add(Map.of(
                     "role", msg.getRole().name().toLowerCase(),
                     "content", msg.getContent()
             ));
         }
-        messages.add(Map.of("role", "user", "content", message));
 
         Map<String, Object> request = new HashMap<>();
-        request.put("model", aiModel);
-        request.put("messages", messages);
-        request.put("stream", false);
+        request.put("message", message);
+        request.put("context", contextList);
+        request.put("retrieved_docs", List.of());  // Empty for now, RAG will be populated by the service
 
         WebClient webClient = webClientBuilder.baseUrl(aiServiceUrl).build();
 
@@ -74,15 +74,28 @@ public class AIChatClient {
             throw new IllegalStateException("AI service returned null response");
         }
 
-        String reply = extractOllamaReply(response);
+        String reply = (String) response.get("reply");
+        if (reply == null || reply.isBlank()) {
+            throw new IllegalStateException("AI response missing reply content");
+        }
+
+        Double confidence = (Double) response.getOrDefault("confidence", 0.9);
+        List<String> suggestions = (List<String>) response.getOrDefault("suggestions", List.of());
+
         return ChatResponse.builder()
                 .reply(reply)
-                .confidence(0.9)
-                .suggestions(List.of())
+                .confidence(confidence)
+                .suggestions(suggestions)
                 .build();
     }
 
     private String extractOllamaReply(Map<String, Object> response) {
+        // This method is no longer needed but kept for backward compatibility
+        Object replyObj = response.get("reply");
+        if (replyObj instanceof String && !((String) replyObj).isBlank()) {
+            return (String) replyObj;
+        }
+
         Object messageObj = response.get("message");
         if (messageObj instanceof Map) {
             Object contentObj = ((Map<?, ?>) messageObj).get("content");

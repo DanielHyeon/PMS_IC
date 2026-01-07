@@ -1,0 +1,6 @@
+# SSL certificates should be placed here
+# For production:
+# - cert.pem (SSL certificate)
+# - key.pem (SSL private key)
+#
+# DO NOT commit real certificates to git!

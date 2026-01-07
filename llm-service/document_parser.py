@@ -62,7 +62,8 @@ class MinerUDocumentParser:
 
         # 기본 모델 경로 설정
         if model_path is None:
-            model_path = os.path.join(
+            env_model_path = os.getenv("MINERU_MODEL_PATH")
+            model_path = env_model_path or os.path.join(
                 os.path.dirname(__file__),
                 "models",
                 "MinerU2.5-2509-1.2B.i1-Q6_K.gguf"
@@ -296,35 +297,90 @@ class MinerUDocumentParser:
             return self._parse_with_heuristics(text, metadata)
 
         try:
-            # MinerU에 문서 구조 분석 요청
-            prompt = self._create_parsing_prompt(text)
+            max_chars = int(os.getenv("MINERU_PARSE_MAX_CHARS", "12000"))
+            chunk_tokens = int(os.getenv("MINERU_PARSE_CHUNK_TOKENS", "3000"))
+            chunk_overlap = int(os.getenv("MINERU_PARSE_CHUNK_OVERLAP", "200"))
 
-            logger.debug(f"Sending document to MinerU for parsing (text length: {len(text)})")
+            if len(text) <= max_chars:
+                parsed_blocks = self._parse_text_with_model(text)
+            else:
+                chunks = self._split_text_by_tokens(text, chunk_tokens, chunk_overlap)
+                parsed_blocks = self._merge_blocks([
+                    self._parse_text_with_model(chunk, chunk_index=idx)
+                    for idx, chunk in enumerate(chunks)
+                ])
 
-            # 모델 추론
-            response = self.model(
-                prompt,
-                max_tokens=2048,
-                temperature=0.1,  # 일관된 구조 추출을 위해 낮은 온도
-                top_p=0.9,
-                stop=["</document>", "\n\n---\n\n"],
-                echo=False
-            )
-
-            # 응답 파싱
-            result_text = response['choices'][0]['text'].strip()
-            logger.debug(f"MinerU response length: {len(result_text)}")
-
-            # JSON 형식으로 파싱 시도
-            blocks = self._parse_model_response(result_text, text)
-
-            logger.info(f"MinerU parsed document into {len(blocks)} blocks")
-            return blocks
+            logger.info(f"MinerU parsed document into {len(parsed_blocks)} blocks")
+            return parsed_blocks
 
         except Exception as e:
             logger.error(f"MinerU model parsing failed: {e}")
             logger.warning("Falling back to heuristic parsing.")
             return self._parse_with_heuristics(text, metadata)
+
+    def _parse_text_with_model(self, text: str, chunk_index: int = 0) -> List[DocumentBlock]:
+        """단일 텍스트 청크를 MinerU 모델로 파싱."""
+        prompt = self._create_parsing_prompt(text)
+        logger.debug("Sending chunk %d to MinerU for parsing (length: %d)", chunk_index, len(text))
+
+        response = self.model(
+            prompt,
+            max_tokens=2048,
+            temperature=0.1,
+            top_p=0.9,
+            stop=["</document>", "\n\n---\n\n"],
+            echo=False
+        )
+
+        result_text = response['choices'][0]['text'].strip()
+        logger.debug("MinerU response length for chunk %d: %d", chunk_index, len(result_text))
+
+        blocks = self._parse_model_response(result_text, text)
+        for block in blocks:
+            block.metadata.setdefault("chunk_index", chunk_index)
+        return blocks
+
+    def _split_text_by_tokens(self, text: str, chunk_size: int, overlap: int) -> List[str]:
+        """Llama 토크나이저 기반으로 텍스트를 청크 분할."""
+        if not text:
+            return []
+
+        try:
+            tokens = self.model.tokenize(text.encode("utf-8"))
+        except Exception as exc:
+            logger.warning("Tokenizer unavailable; falling back to char splits: %s", exc)
+            return [text[i:i + chunk_size] for i in range(0, len(text), max(chunk_size - overlap, 1))]
+
+        if not tokens:
+            return []
+
+        chunks: List[str] = []
+        step = max(chunk_size - overlap, 1)
+        for start in range(0, len(tokens), step):
+            token_slice = tokens[start:start + chunk_size]
+            if not token_slice:
+                continue
+            try:
+                if hasattr(self.model, "detokenize"):
+                    chunk_bytes = self.model.detokenize(token_slice)
+                    chunk_text = chunk_bytes.decode("utf-8", errors="ignore")
+                else:
+                    raise AttributeError("detokenize not available")
+            except Exception:
+                ratio_start = int(len(text) * (start / len(tokens)))
+                ratio_end = int(len(text) * (min(start + chunk_size, len(tokens)) / len(tokens)))
+                chunk_text = text[ratio_start:ratio_end]
+            if chunk_text.strip():
+                chunks.append(chunk_text)
+
+        return chunks
+
+    def _merge_blocks(self, block_lists: List[List[DocumentBlock]]) -> List[DocumentBlock]:
+        """청크별 파싱 결과를 평탄화."""
+        merged: List[DocumentBlock] = []
+        for blocks in block_lists:
+            merged.extend(blocks)
+        return merged
 
     def _create_parsing_prompt(self, text: str) -> str:
         """
@@ -352,7 +408,7 @@ Return your analysis in JSON format as an array of blocks:
 
 Document to analyze:
 ---
-{text[:3000]}
+{text}
 ---
 
 Structural analysis (JSON):"""

@@ -121,6 +121,8 @@ dist
 package-lock.json
 
 #LLM 모델
-models/
+# 큰 GGUF 모델 파일 무시
 *.gguf
 models/*.gguf
+models/**/*.gguf
+*.gguf.*
