@@ -10,14 +10,20 @@
 │  ┌──────────────┐  ┌──────────────┐  ┌───────────┐ │
 │  │   Frontend   │  │   Backend    │  │ PostgreSQL│ │
 │  │  React+Vite  │  │ Spring Boot  │  │  (DB)     │ │
-│  │  :5173       │  │  :8080       │  │  :5432    │ │
+│  │  :5173       │  │  :8083       │  │  :5432    │ │
 │  └──────────────┘  └──────────────┘  └───────────┘ │
 │                                                      │
 │  ┌──────────────┐  ┌──────────────┐  ┌───────────┐ │
-│  │    Redis     │  │  AI Service  │  │  PgAdmin  │ │
-│  │  (Cache)     │  │   (Mock)     │  │   (GUI)   │ │
+│  │    Redis     │  │ LLM Service  │  │  PgAdmin  │ │
+│  │  (Cache)     │  │  (Flask+GPU) │  │   (GUI)   │ │
 │  │  :6379       │  │  :8000       │  │  :5050    │ │
 │  └──────────────┘  └──────────────┘  └───────────┘ │
+│                                                      │
+│  ┌──────────────┐  ┌──────────────┐                │
+│  │    Neo4j     │  │ MockServer   │                │
+│  │(Graph+Vector)│  │  (Fallback)  │                │
+│  │  :7474/:7687 │  │  :1080       │                │
+│  └──────────────┘  └──────────────┘                │
 │                                                      │
 └─────────────────────────────────────────────────────┘
 ```
@@ -52,10 +58,12 @@ docker-compose logs -f backend
 | 서비스 | URL | 설명 |
 |--------|-----|------|
 | **Frontend** | http://localhost:5173 | React 앱 |
-| **Backend API** | http://localhost:8080 | Spring Boot API |
+| **Backend API** | http://localhost:8083 | Spring Boot API |
+| **LLM Service** | http://localhost:8000 | AI 챗봇 (Flask + LLM + RAG) |
+| **Neo4j Browser** | http://localhost:7474 | Graph DB GUI (neo4j / pmspassword123) |
 | **PgAdmin** | http://localhost:5050 | PostgreSQL GUI (admin@pms.com / admin) |
 | **Redis Commander** | http://localhost:8081 | Redis GUI |
-| **AI Service Mock** | http://localhost:8000 | AI 팀 Mock API |
+| **MockServer** | http://localhost:1080 | AI Fallback Mock API |
 
 ### 4. 서비스 중지
 
@@ -201,16 +209,30 @@ docker-compose down -v --rmi all
 
 ### Spring Boot Backend
 
-- **Port:** 8080
+- **Port:** 8083
 - **Profile:** dev
-- **API Docs:** http://localhost:8080/swagger-ui.html (구현 후)
-- **Actuator:** http://localhost:8080/actuator/health
+- **API Docs:** <http://localhost:8083/swagger-ui.html>
+- **Actuator:** <http://localhost:8083/actuator/health>
 
-### AI Service Mock
+### LLM Service (Flask)
 
 - **Port:** 8000
-- **용도:** AI 팀 개발 전까지 Mock 응답 제공
-- **실제 AI 서비스 연동 시:** `docker-compose.yml`에서 `ai-service` 설정 변경
+- **용도:** AI 챗봇 (LLM + RAG)
+- **모델:** LFM2-2.6B 또는 Gemma 3 12B
+- **Health Check:** <http://localhost:8000/health>
+- **모델 위치:** `llm-service/models/` 디렉토리
+
+### Neo4j (GraphRAG)
+
+- **Port:** 7474 (Browser), 7687 (Bolt)
+- **용도:** RAG 벡터 검색 + 그래프 쿼리
+- **Browser:** <http://localhost:7474>
+- **계정:** neo4j / pmspassword123
+
+### MockServer
+
+- **Port:** 1080
+- **용도:** LLM 서비스 장애 시 Fallback Mock 응답 제공
 
 ---
 
@@ -219,16 +241,23 @@ docker-compose down -v --rmi all
 ### 포트 충돌
 
 ```bash
+# 사용 중인 포트 확인 (Linux)
+lsof -i :5432
+lsof -i :8083
+
 # 사용 중인 포트 확인 (Windows)
 netstat -ano | findstr :5432
-netstat -ano | findstr :8080
+netstat -ano | findstr :8083
+
+# 프로세스 종료 (Linux)
+kill -9 <PID>
 
 # 프로세스 종료 (Windows)
 taskkill /PID <PID> /F
 
 # 또는 docker-compose.yml에서 포트 변경
 # ports:
-#   - "5433:5432"  # 5432 대신 5433 사용
+#   - "8084:8080"  # 8083 대신 8084 사용
 ```
 
 ### 컨테이너가 시작되지 않음
@@ -359,8 +388,10 @@ jobs:
 - [ ] 필요한 포트가 사용 가능한지 확인
 - [ ] `docker-compose up -d` 실행
 - [ ] 모든 서비스 헬스체크 통과
-- [ ] Frontend http://localhost:5173 접속 확인
-- [ ] Backend http://localhost:8080/actuator/health 확인
+- [ ] Frontend <http://localhost:5173> 접속 확인
+- [ ] Backend <http://localhost:8083/actuator/health> 확인
+- [ ] LLM Service <http://localhost:8000/health> 확인 (model_loaded: true)
+- [ ] Neo4j Browser <http://localhost:7474> 접속 확인
 - [ ] PgAdmin 접속 및 DB 연결 확인
 
 ---

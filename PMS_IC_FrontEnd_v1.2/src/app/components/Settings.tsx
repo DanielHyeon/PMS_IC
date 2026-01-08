@@ -42,7 +42,7 @@ export default function Settings({ userRole }: SettingsProps) {
   const [isChangingModel, setIsChangingModel] = useState(false);
 
   const isAdmin = userRole === 'admin';
-  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083/api';
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem('auth_token');

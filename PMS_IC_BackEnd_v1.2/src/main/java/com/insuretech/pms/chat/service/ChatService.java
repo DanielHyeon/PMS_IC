@@ -32,7 +32,18 @@ public class ChatService {
 
     @Transactional
     public ChatResponse sendMessage(ChatRequest request) {
-        User currentUser = authService.getCurrentUser();
+        // 인증된 사용자가 있으면 가져오고, 없으면 guest로 처리
+        User currentUser;
+        String userId;
+        try {
+            currentUser = authService.getCurrentUser();
+            userId = currentUser.getId();
+        } catch (Exception e) {
+            // 인증되지 않은 사용자는 guest로 처리
+            currentUser = null;
+            userId = "guest";
+            log.info("Processing chat request for unauthenticated user (guest)");
+        }
 
         // 세션 조회 또는 생성
         ChatSession session;
@@ -41,7 +52,7 @@ public class ChatService {
                     .orElseThrow(() -> CustomException.notFound("채팅 세션을 찾을 수 없습니다"));
         } else {
             session = ChatSession.builder()
-                    .userId(currentUser.getId())
+                    .userId(userId)
                     .title("New Chat")
                     .active(true)
                     .build();
@@ -61,7 +72,7 @@ public class ChatService {
         List<ChatMessage> recentMessages = getRecentMessages(session.getId(), 10);
 
         // AI 서비스 호출
-        ChatResponse aiResponse = aiChatClient.chat(currentUser.getId(), request.getMessage(), recentMessages);
+        ChatResponse aiResponse = aiChatClient.chat(userId, request.getMessage(), recentMessages);
 
         // AI 응답 저장
         ChatMessage assistantMessage = ChatMessage.builder()

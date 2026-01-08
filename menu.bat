@@ -64,7 +64,7 @@ echo.
 echo 1. Frontend (http://localhost:5173)
 echo 2. Backend API (http://localhost:8080)
 echo 3. PgAdmin (http://localhost:5050)
-echo 4. Redis Commander (http://localhost:8081)
+echo 4. Redis Commander (http://localhost:8082)
 echo 5. 모두 열기
 echo 0. 메인 메뉴로
 echo.
@@ -76,11 +76,11 @@ if errorlevel 5 (
     start http://localhost:5173
     start http://localhost:8080
     start http://localhost:5050
-    start http://localhost:8081
+    start http://localhost:8082
     goto menu
 )
 if errorlevel 4 (
-    start http://localhost:8081
+    start http://localhost:8082
     goto menu
 )
 if errorlevel 3 (

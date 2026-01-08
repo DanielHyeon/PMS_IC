@@ -148,7 +148,7 @@ dev-setup: ## 개발 환경 초기 설정
 	@echo "  Frontend:  http://localhost:5173"
 	@echo "  Backend:   http://localhost:8080"
 	@echo "  PgAdmin:   http://localhost:5050"
-	@echo "  Redis GUI: http://localhost:8081"
+	@echo "  Redis GUI: http://localhost:8082"
 
 open: ## 브라우저에서 서비스 열기
 	@echo "브라우저에서 서비스를 여는 중..."

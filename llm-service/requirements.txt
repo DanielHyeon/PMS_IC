@@ -12,6 +12,7 @@ pypdf==3.17.4
 python-docx==1.1.0
 openpyxl==3.1.2
 requests>=2.31.0
+rapidfuzz>=3.0.0  # For fuzzy matching in query refinement
 # chromadb>=0.5.20  # Deprecated
 
 # LangGraph dependencies

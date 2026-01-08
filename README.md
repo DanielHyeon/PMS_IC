@@ -72,7 +72,7 @@ PMS Insurance Claims는 보험 심사 프로젝트를 효율적으로 관리하�
 ┌─────▼─────┐  ┌────▼────┐  ┌──────▼──────┐
 │ Frontend  │  │ Backend │  │ LLM Service │
 │ (React)   │  │ (Spring)│  │ (Flask)     │
-│ Port:5173 │  │ Port:8080│ │ Port:8000   │
+│ Port:5173 │  │ Port:8083│ │ Port:8000   │
 └───────────┘  └────┬────┘  └──────┬──────┘
                     │              │
         ┌───────────┼──────────────┼───────────┐
@@ -164,15 +164,16 @@ cp .env.example .env
 ### 3. 모델 다운로드
 
 ```bash
-# models 디렉토리 생성
-mkdir -p models
+# llm-service/models 디렉토리에 모델 파일 배치
+mkdir -p llm-service/models
 
 # Gemma 3 12B GGUF 모델 다운로드
 # HuggingFace에서 다운로드: https://huggingface.co/...
-# models/google.gemma-3-12b-pt.Q5_K_M.gguf 경로에 배치
+# llm-service/models/google.gemma-3-12b-pt.Q5_K_M.gguf 경로에 배치
 
-# MinerU2.5 모델 다운로드
-# models/MinerU2.5-2509-1.2B.i1-Q6_K.gguf 경로에 배치
+# LFM2 또는 MinerU2.5 모델 다운로드
+# llm-service/models/LFM2-2.6B-Uncensored-X64.i1-Q6_K.gguf 경로에 배치
+# llm-service/models/MinerU2.5-2509-1.2B.i1-Q6_K.gguf 경로에 배치
 ```
 
 ### 4. 서비스 시작
@@ -199,8 +200,8 @@ docker exec pms-llm-service python3 /app/load_ragdata_pdfs_neo4j.py --ragdata-di
 ### 6. 서비스 접속
 
 - **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:8080
-- **Swagger API 문서**: http://localhost:8080/swagger-ui.html
+- **Backend API**: http://localhost:8083
+- **Swagger API 문서**: http://localhost:8083/swagger-ui.html
 - **LLM Service**: http://localhost:8000
 - **Neo4j Browser**: http://localhost:7474 (neo4j / pmspassword123)
 - **PgAdmin**: http://localhost:5050 (admin@pms.com / admin)
@@ -270,7 +271,7 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 ```bash
 # Backend
-curl http://localhost:8080/actuator/health
+curl http://localhost:8083/actuator/health
 
 # LLM Service
 curl http://localhost:8000/health

@@ -5,6 +5,8 @@ version: '3.8'
 
 services:
   backend:
+    networks:
+      - pms-network
     environment:
       SPRING_DEVTOOLS_RESTART_ENABLED: 'true'
       SPRING_JPA_SHOW_SQL: 'true'

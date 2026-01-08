@@ -60,12 +60,12 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-pms_password}
       SPRING_REDIS_HOST: ${REDIS_HOST:-redis}
       SPRING_REDIS_PORT: ${REDIS_PORT:-6379}
-      AI_TEAM_API_URL: ${AI_TEAM_API_URL:-http://llm-service:8000}
-      AI_TEAM_MOCK_URL: http://ai-service:1080
-      AI_TEAM_MODEL: ${AI_TEAM_MODEL:-google.gemma-3-12b-pt.Q5_K_M.gguf}
+      AI_SERVICE_URL: ${AI_SERVICE_URL:-http://llm-service:8000}
+      AI_SERVICE_MOCK_URL: http://mockserver:1080
+      AI_SERVICE_MODEL: ${AI_SERVICE_MODEL:-google.gemma-3-12b-pt.Q5_K_M.gguf}
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
     ports:
-      - "8080:8080"
+      - "8083:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -94,7 +94,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: pms-frontend
     environment:
-      VITE_API_URL: http://localhost:8080/api
+      VITE_API_URL: http://localhost:8083/api
     ports:
       - "5173:5173"
     volumes:
@@ -118,7 +118,6 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./models:/app/models
       - ./llm-service:/app
     networks:
       - pms-network
@@ -314,7 +313,7 @@ services:
     environment:
       REDIS_HOSTS: local:redis:6379
     ports:
-      - "8081:8081"
+      - "8082:8081"
     networks:
       - pms-network
     depends_on:

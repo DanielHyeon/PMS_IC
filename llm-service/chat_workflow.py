@@ -886,7 +886,12 @@ RAG 문서와 제공된 컨텍스트를 최우선으로 사용하고, 근거가 
             "retrieved_docs": retrieved_docs or [],
             "response": None,
             "confidence": 0.0,
-            "debug_info": {}
+            "debug_info": {},
+
+            # 쿼리 개선 관련 필드 초기화
+            "current_query": message,
+            "retry_count": 0,
+            "extracted_terms": []
         }
 
         logger.info(f"Starting workflow for message: {message[:50]}...")
@@ -895,12 +900,23 @@ RAG 문서와 제공된 컨텍스트를 최우선으로 사용하고, 근거가 
         final_state = self.graph.invoke(initial_state)
 
         logger.info(f"Workflow completed. Intent: {final_state.get('intent')}, "
-                   f"RAG docs: {len(final_state.get('retrieved_docs', []))}")
+                   f"RAG docs: {len(final_state.get('retrieved_docs', []))}, "
+                   f"Retries: {final_state.get('retry_count', 0)}")
+
+        # 디버그 정보에 쿼리 개선 정보 추가
+        debug_info = final_state.get("debug_info", {})
+        if final_state.get("retry_count", 0) > 0:
+            debug_info["query_refinement"] = {
+                "original_query": message,
+                "final_query": final_state.get("current_query", message),
+                "retry_count": final_state.get("retry_count", 0),
+                "extracted_terms": final_state.get("extracted_terms", [])
+            }
 
         return {
             "reply": final_state.get("response", "응답을 생성할 수 없습니다."),
             "confidence": final_state.get("confidence", 0.0),
             "intent": final_state.get("intent"),
             "rag_docs_count": len(final_state.get("retrieved_docs", [])),
-            "debug_info": final_state.get("debug_info", {})
+            "debug_info": debug_info
         }
