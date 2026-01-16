@@ -138,6 +138,151 @@ export class ApiService {
     ]);
   }
 
+  // ========== Project API ==========
+  async getProjects() {
+    const response = await this.fetchWithFallback('/projects', {}, {
+      data: [
+        {
+          id: '1',
+          name: '보험금 청구 AI 자동심사 시스템',
+          code: 'PMS-IC-2025',
+          status: 'IN_PROGRESS',
+          progress: 62,
+          startDate: '2025-01-02',
+          endDate: '2025-12-31',
+        },
+      ],
+    });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getProject(projectId: string) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}`, {}, {
+      data: {
+        id: projectId,
+        name: '보험금 청구 AI 자동심사 시스템',
+        code: 'PMS-IC-2025',
+        description: 'AI 기반 보험금 청구 자동심사 시스템 구축 프로젝트',
+        status: 'IN_PROGRESS',
+        progress: 62,
+        startDate: '2025-01-02',
+        endDate: '2025-12-31',
+        budget: 1000000000,
+        budgetUsed: 580000000,
+      },
+    });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async createProject(data: any) {
+    const response = await this.fetchWithFallback('/projects', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: Date.now().toString() } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async updateProject(projectId: string, data: any) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: projectId } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async deleteProject(projectId: string) {
+    return this.fetchWithFallback(`/projects/${projectId}`, {
+      method: 'DELETE',
+    }, { success: true });
+  }
+
+  async setDefaultProject(projectId: string) {
+    return this.fetchWithFallback(`/projects/${projectId}/set-default`, {
+      method: 'POST',
+    }, { success: true, projectId });
+  }
+
+  // ========== Part (Sub-Project) API ==========
+  async getParts(projectId: string) {
+    return this.fetchWithFallback(`/projects/${projectId}/parts`, {}, []);
+  }
+
+  async getPart(partId: string) {
+    return this.fetchWithFallback(`/parts/${partId}`, {}, null);
+  }
+
+  async createPart(projectId: string, data: any) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/parts`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: `part-${Date.now()}`, projectId } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async updatePart(partId: string, data: any) {
+    const response = await this.fetchWithFallback(`/parts/${partId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: partId } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async deletePart(partId: string) {
+    return this.fetchWithFallback(`/parts/${partId}`, {
+      method: 'DELETE',
+    }, { success: true });
+  }
+
+  async assignPartLeader(partId: string, userId: string) {
+    return this.fetchWithFallback(`/parts/${partId}/leader`, {
+      method: 'PUT',
+      body: JSON.stringify({ userId }),
+    }, { success: true });
+  }
+
+  async getPartMembers(partId: string) {
+    return this.fetchWithFallback(`/parts/${partId}/members`, {}, []);
+  }
+
+  async addPartMember(partId: string, userId: string) {
+    return this.fetchWithFallback(`/parts/${partId}/members`, {
+      method: 'POST',
+      body: JSON.stringify({ userId }),
+    }, { success: true });
+  }
+
+  async removePartMember(partId: string, memberId: string) {
+    return this.fetchWithFallback(`/parts/${partId}/members/${memberId}`, {
+      method: 'DELETE',
+    }, { success: true });
+  }
+
+  // ========== Project Members API ==========
+  async getProjectMembers(projectId: string) {
+    return this.fetchWithFallback(`/projects/${projectId}/members`, {}, []);
+  }
+
+  async addProjectMember(projectId: string, userId: string, role: string) {
+    return this.fetchWithFallback(`/projects/${projectId}/members`, {
+      method: 'POST',
+      body: JSON.stringify({ userId, role }),
+    }, { success: true });
+  }
+
+  async updateProjectMemberRole(projectId: string, memberId: string, role: string) {
+    return this.fetchWithFallback(`/projects/${projectId}/members/${memberId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    }, { success: true });
+  }
+
+  async removeProjectMember(projectId: string, memberId: string) {
+    return this.fetchWithFallback(`/projects/${projectId}/members/${memberId}`, {
+      method: 'DELETE',
+    }, { success: true });
+  }
+
+  // ========== Phase API ==========
   async getPhases() {
     return this.fetchWithFallback('/phases', {}, []);
   }
@@ -502,6 +647,164 @@ export class ApiService {
       method: 'PUT',
       body: JSON.stringify({ role, permissionId, granted }),
     }, { message: 'Permission updated' });
+  }
+
+  // ========== User Management API (Admin) ==========
+  async getUsers() {
+    return this.fetchWithFallback('/users', {}, [
+      {
+        id: 'user-001',
+        name: '김철수',
+        email: 'kim@example.com',
+        department: 'IT기획팀',
+        systemRole: 'user',
+        legacyRole: 'pm',
+        status: 'active',
+        createdAt: '2024-01-15',
+      },
+      {
+        id: 'user-002',
+        name: '이영희',
+        email: 'lee@example.com',
+        department: '경영지원팀',
+        systemRole: 'user',
+        legacyRole: 'sponsor',
+        status: 'active',
+        createdAt: '2024-01-15',
+      },
+      {
+        id: 'user-003',
+        name: '박민수',
+        email: 'park@example.com',
+        department: 'PMO',
+        systemRole: 'pmo',
+        legacyRole: 'pmo_head',
+        status: 'active',
+        createdAt: '2024-02-01',
+      },
+      {
+        id: 'user-004',
+        name: '최영수',
+        email: 'choi@example.com',
+        department: '개발팀',
+        systemRole: 'user',
+        legacyRole: 'developer',
+        status: 'active',
+        createdAt: '2024-03-01',
+      },
+      {
+        id: 'user-005',
+        name: '정수진',
+        email: 'jung@example.com',
+        department: 'QA팀',
+        systemRole: 'user',
+        legacyRole: 'qa',
+        status: 'active',
+        createdAt: '2024-03-15',
+      },
+      {
+        id: 'user-006',
+        name: '한미영',
+        email: 'han@example.com',
+        department: '현업팀',
+        systemRole: 'user',
+        legacyRole: 'business_analyst',
+        status: 'active',
+        createdAt: '2024-04-01',
+      },
+      {
+        id: 'user-007',
+        name: '오현우',
+        email: 'oh@example.com',
+        department: '감사팀',
+        systemRole: 'user',
+        legacyRole: 'auditor',
+        status: 'active',
+        createdAt: '2024-04-15',
+      },
+      {
+        id: 'user-admin',
+        name: '관리자',
+        email: 'admin@example.com',
+        department: 'IT운영팀',
+        systemRole: 'admin',
+        legacyRole: 'admin',
+        status: 'active',
+        createdAt: '2024-01-01',
+      },
+    ]);
+  }
+
+  async getUser(userId: string) {
+    const response = await this.fetchWithFallback(`/users/${userId}`, {}, {
+      data: {
+        id: userId,
+        name: 'Unknown User',
+        email: 'unknown@example.com',
+        department: 'Unknown',
+        systemRole: 'user',
+        status: 'active',
+      }
+    });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async updateUserSystemRole(userId: string, systemRole: string) {
+    const response = await this.fetchWithFallback(`/users/${userId}/system-role`, {
+      method: 'PUT',
+      body: JSON.stringify({ systemRole }),
+    }, { data: { userId, systemRole, success: true } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async assignPM(userId: string, projectIds: string[]) {
+    const response = await this.fetchWithFallback(`/users/${userId}/assign-pm`, {
+      method: 'POST',
+      body: JSON.stringify({ projectIds }),
+    }, { data: { userId, projectIds, role: 'pm', success: true } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async revokePM(userId: string, projectId: string) {
+    const response = await this.fetchWithFallback(`/users/${userId}/revoke-pm`, {
+      method: 'POST',
+      body: JSON.stringify({ projectId }),
+    }, { data: { userId, projectId, success: true } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getUserProjectRoles(userId: string) {
+    return this.fetchWithFallback(`/users/${userId}/project-roles`, {}, []);
+  }
+
+  async createUser(data: any) {
+    const response = await this.fetchWithFallback('/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: `user-${Date.now()}` } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async updateUser(userId: string, data: any) {
+    const response = await this.fetchWithFallback(`/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: userId } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async deleteUser(userId: string) {
+    return this.fetchWithFallback(`/users/${userId}`, {
+      method: 'DELETE',
+    }, { success: true });
+  }
+
+  async updateUserStatus(userId: string, status: 'active' | 'inactive') {
+    const response = await this.fetchWithFallback(`/users/${userId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    }, { data: { userId, status, success: true } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
   }
 
   // ========== Meeting API ==========

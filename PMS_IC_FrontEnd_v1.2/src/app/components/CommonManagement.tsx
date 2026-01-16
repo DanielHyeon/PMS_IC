@@ -173,12 +173,120 @@ const formatDate = (dateString?: string) => {
 // 메인 컴포넌트
 // ========================================
 
+// 초기 Mock 데이터
+const initialMeetings: Meeting[] = [
+  {
+    id: '1',
+    title: '프로젝트 킥오프 미팅',
+    description: 'AI 자동심사 시스템 프로젝트 착수 회의',
+    meetingType: 'KICKOFF',
+    scheduledAt: '2025-01-15T10:00:00',
+    location: '본사 대회의실',
+    organizer: 'PMO 총괄',
+    attendees: ['프로젝트 스폰서', 'PMO 총괄', 'PM', '개발팀장', 'QA팀장'],
+    status: 'COMPLETED',
+    minutes: '프로젝트 목표 및 일정 확정, 역할 분담 완료',
+  },
+  {
+    id: '2',
+    title: '주간 진행 점검 회의',
+    description: '8월 3주차 진행 현황 점검',
+    meetingType: 'WEEKLY',
+    scheduledAt: '2025-08-18T14:00:00',
+    location: '온라인 (Zoom)',
+    organizer: 'PM',
+    attendees: ['PM', '개발팀', 'QA팀'],
+    status: 'SCHEDULED',
+  },
+  {
+    id: '3',
+    title: 'AI 모델 성능 리뷰',
+    description: 'OCR 모델 v2.0 성능 평가 및 개선 방안 논의',
+    meetingType: 'TECHNICAL',
+    scheduledAt: '2025-08-20T15:00:00',
+    location: '개발팀 회의실',
+    organizer: 'AI팀장',
+    attendees: ['AI팀장', 'ML 엔지니어', '데이터 사이언티스트'],
+    status: 'SCHEDULED',
+  },
+];
+
+const initialIssues: Issue[] = [
+  {
+    id: '1',
+    title: 'OCR 인식률 목표치 미달',
+    description: '현재 OCR 인식률 93.5%로 목표치 95% 대비 1.5%p 부족',
+    issueType: 'RISK',
+    priority: 'HIGH',
+    status: 'IN_PROGRESS',
+    assignee: 'AI팀장',
+    reportedBy: 'PM',
+    reportedAt: '2025-08-10',
+    resolution: '추가 학습 데이터 확보 및 모델 튜닝 진행 중',
+  },
+  {
+    id: '2',
+    title: '레거시 시스템 연동 지연',
+    description: '기존 보험금 지급 시스템과의 API 연동 일정 지연 예상',
+    issueType: 'BLOCKER',
+    priority: 'CRITICAL',
+    status: 'OPEN',
+    assignee: 'SI팀장',
+    reportedBy: 'PM',
+    reportedAt: '2025-08-15',
+  },
+  {
+    id: '3',
+    title: '개인정보 비식별화 검증 필요',
+    description: '학습 데이터 비식별화 처리 결과에 대한 정보보호팀 검증 요청',
+    issueType: 'CHANGE_REQUEST',
+    priority: 'MEDIUM',
+    status: 'RESOLVED',
+    assignee: '정보보호팀장',
+    reportedBy: 'PM',
+    reportedAt: '2025-07-20',
+    resolution: '비식별화 검증 완료, 승인됨',
+    resolvedAt: '2025-08-01',
+  },
+];
+
+const initialDeliverables: Deliverable[] = [
+  {
+    id: '1',
+    name: 'AS-IS 프로세스 분석 보고서',
+    description: '현행 보험금 청구 심사 프로세스 분석',
+    type: 'DOCUMENT',
+    status: 'APPROVED',
+    version: '1.0',
+    uploadedAt: '2025-02-10',
+    approvedBy: 'PMO 총괄',
+  },
+  {
+    id: '2',
+    name: 'AI 모델 설계서',
+    description: 'OCR 및 분류 모델 아키텍처 설계 문서',
+    type: 'DOCUMENT',
+    status: 'IN_REVIEW',
+    version: '0.9',
+    uploadedAt: '2025-08-12',
+  },
+  {
+    id: '3',
+    name: 'API 명세서 초안',
+    description: '시스템 연동을 위한 REST API 명세',
+    type: 'DOCUMENT',
+    status: 'DRAFT',
+    version: '0.1',
+    uploadedAt: '2025-08-14',
+  },
+];
+
 export default function CommonManagement({ userRole }: { userRole: UserRole }) {
   const { currentProject } = useProject();
   const [activeTab, setActiveTab] = useState<TabType>('deliverables');
-  const [meetings, setMeetings] = useState<Meeting[]>([]);
-  const [issues, setIssues] = useState<Issue[]>([]);
-  const [deliverables, setDeliverables] = useState<Deliverable[]>([]);
+  const [meetings, setMeetings] = useState<Meeting[]>(initialMeetings);
+  const [issues, setIssues] = useState<Issue[]>(initialIssues);
+  const [deliverables, setDeliverables] = useState<Deliverable[]>(initialDeliverables);
   const [loading, setLoading] = useState(false);
 
   // 필터 상태
@@ -199,7 +307,7 @@ export default function CommonManagement({ userRole }: { userRole: UserRole }) {
   const canManageIssues = ['pm', 'pmo_head', 'developer', 'qa'].includes(userRole);
   const canManageMeetings = ['pm', 'pmo_head'].includes(userRole);
 
-  // 데이터 로드
+  // 데이터 로드 (프로젝트가 있을 때만 API 호출, 없으면 초기 데이터 유지)
   useEffect(() => {
     if (!currentProject?.id) return;
 
@@ -210,10 +318,15 @@ export default function CommonManagement({ userRole }: { userRole: UserRole }) {
           apiService.getMeetings(currentProject.id),
           apiService.getIssues(currentProject.id),
         ]);
-        setMeetings(Array.isArray(meetingsData) ? meetingsData : []);
-        setIssues(Array.isArray(issuesData) ? issuesData : []);
+        // API에서 데이터가 있으면 업데이트, 없으면 초기 데이터 유지
+        if (Array.isArray(meetingsData) && meetingsData.length > 0) {
+          setMeetings(meetingsData);
+        }
+        if (Array.isArray(issuesData) && issuesData.length > 0) {
+          setIssues(issuesData);
+        }
       } catch (error) {
-        console.warn('Failed to load common management data:', error);
+        console.warn('Failed to load common management data, using initial data:', error);
       } finally {
         setLoading(false);
       }
@@ -309,22 +422,13 @@ export default function CommonManagement({ userRole }: { userRole: UserRole }) {
     return true;
   });
 
-  if (!currentProject) {
-    return (
-      <div className="p-6">
-        <div className="text-center py-12 text-gray-500">
-          프로젝트를 선택해주세요.
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6">
       <div className="mb-6">
         <h2 className="text-2xl font-semibold text-gray-900">공통 관리</h2>
         <p className="text-sm text-gray-500 mt-1">산출물, 회의, 이슈를 통합 관리합니다</p>
       </div>
+
 
       {/* 탭 네비게이션 */}
       <div className="flex border-b border-gray-200 mb-6">
@@ -448,16 +552,100 @@ export default function CommonManagement({ userRole }: { userRole: UserRole }) {
         <>
           {/* 산출물 탭 */}
           {activeTab === 'deliverables' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-              <div className="p-4 border-b border-gray-200">
-                <p className="text-sm text-gray-500">
-                  산출물 관리는 <span className="font-medium text-blue-600">단계별 관리</span> 메뉴에서 Phase별로 관리됩니다.
-                </p>
-              </div>
-              <div className="p-6 text-center text-gray-400">
-                <FileText size={48} className="mx-auto mb-4 opacity-50" />
-                <p>단계별 관리 메뉴에서 Phase를 선택하여 산출물을 관리하세요.</p>
-              </div>
+            <div className="space-y-4">
+              {deliverables.length === 0 ? (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center text-gray-400">
+                  <FileText size={48} className="mx-auto mb-4 opacity-50" />
+                  <p>등록된 산출물이 없습니다.</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+                  <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+                    <h3 className="font-medium text-gray-900">전체 산출물 목록</h3>
+                    <span className="text-sm text-gray-500">{deliverables.length}개</span>
+                  </div>
+                  <div className="divide-y divide-gray-200">
+                    {deliverables.map((deliverable) => (
+                      <div
+                        key={deliverable.id}
+                        className="p-4 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-1">
+                              <FileText size={18} className="text-gray-400" />
+                              <h4 className="font-medium text-gray-900">{deliverable.name}</h4>
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  deliverable.status === 'APPROVED'
+                                    ? 'bg-green-100 text-green-700'
+                                    : deliverable.status === 'IN_REVIEW'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : deliverable.status === 'DRAFT'
+                                    ? 'bg-amber-100 text-amber-700'
+                                    : deliverable.status === 'REJECTED'
+                                    ? 'bg-red-100 text-red-700'
+                                    : 'bg-gray-100 text-gray-700'
+                                }`}
+                              >
+                                {deliverable.status === 'APPROVED'
+                                  ? '승인됨'
+                                  : deliverable.status === 'IN_REVIEW'
+                                  ? '검토중'
+                                  : deliverable.status === 'DRAFT'
+                                  ? '작성중'
+                                  : deliverable.status === 'REJECTED'
+                                  ? '반려됨'
+                                  : '대기'}
+                              </span>
+                              {deliverable.version && (
+                                <span className="text-xs text-gray-500">v{deliverable.version}</span>
+                              )}
+                            </div>
+                            {deliverable.description && (
+                              <p className="text-sm text-gray-500 ml-7 mb-1">{deliverable.description}</p>
+                            )}
+                            <div className="flex items-center gap-4 text-xs text-gray-400 ml-7">
+                              {deliverable.uploadedAt && (
+                                <span className="flex items-center gap-1">
+                                  <Clock size={12} />
+                                  업로드: {deliverable.uploadedAt}
+                                </span>
+                              )}
+                              {deliverable.approvedBy && (
+                                <span>승인자: {deliverable.approvedBy}</span>
+                              )}
+                              {deliverable.type && (
+                                <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                  {deliverable.type}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {canEdit && deliverable.status !== 'APPROVED' && (
+                              <button
+                                className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                title="수정"
+                              >
+                                <Pencil size={16} />
+                              </button>
+                            )}
+                            {canEdit && (
+                              <button
+                                className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                title="삭제"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

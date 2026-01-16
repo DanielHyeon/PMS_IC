@@ -11,10 +11,15 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import LoginScreen from './components/LoginScreen';
 import Settings from './components/Settings';
-import { LayoutDashboard, GitBranch, Kanban, ListTodo, Users, Settings as SettingsIcon, GraduationCap } from 'lucide-react';
+import { LayoutDashboard, GitBranch, Kanban, ListTodo, Users, Settings as SettingsIcon, GraduationCap, FolderOpen, Briefcase, Network } from 'lucide-react';
 import EducationManagement from './components/EducationManagement';
+import CommonManagement from './components/CommonManagement';
+import ProjectManagement from './components/ProjectManagement';
+import PartManagement from './components/PartManagement';
+import { ProjectProvider } from '../contexts/ProjectContext';
+import { AuthProvider, useAuth } from '../contexts/AuthContext';
 
-export type View = 'dashboard' | 'phases' | 'kanban' | 'backlog' | 'roles' | 'education' | 'settings';
+export type View = 'dashboard' | 'projects' | 'parts' | 'phases' | 'kanban' | 'backlog' | 'roles' | 'common' | 'education' | 'settings';
 
 export type UserRole = 'sponsor' | 'pmo_head' | 'pm' | 'developer' | 'qa' | 'business_analyst' | 'auditor' | 'admin';
 
@@ -47,24 +52,27 @@ export default function App() {
   // 역할별 메뉴 접근 권한
   const getAvailableMenus = (role: UserRole): View[] => {
     const menuAccess: Record<UserRole, View[]> = {
-      sponsor: ['dashboard', 'phases', 'roles', 'education', 'settings'],
-      pmo_head: ['dashboard', 'phases', 'kanban', 'backlog', 'roles', 'education', 'settings'],
-      pm: ['dashboard', 'phases', 'kanban', 'backlog', 'education', 'settings'],
+      sponsor: ['dashboard', 'phases', 'roles', 'common', 'education', 'settings'],
+      pmo_head: ['dashboard', 'projects', 'parts', 'phases', 'kanban', 'backlog', 'roles', 'common', 'education', 'settings'],
+      pm: ['dashboard', 'projects', 'parts', 'phases', 'kanban', 'backlog', 'common', 'education', 'settings'],
       developer: ['dashboard', 'kanban', 'backlog', 'education', 'settings'],
       qa: ['dashboard', 'kanban', 'backlog', 'education', 'settings'],
       business_analyst: ['dashboard', 'phases', 'backlog', 'education', 'settings'],
       auditor: ['dashboard', 'phases', 'roles', 'settings'],
-      admin: ['dashboard', 'phases', 'kanban', 'backlog', 'roles', 'education', 'settings'],
+      admin: ['dashboard', 'projects', 'parts', 'phases', 'kanban', 'backlog', 'roles', 'common', 'education', 'settings'],
     };
     return menuAccess[role] || [];
   };
 
   const allMenuItems = [
     { id: 'dashboard' as View, label: '통합 대시보드', icon: LayoutDashboard },
+    { id: 'projects' as View, label: '프로젝트 관리', icon: Briefcase },
+    { id: 'parts' as View, label: '파트 관리', icon: Network },
     { id: 'phases' as View, label: '단계별 관리', icon: GitBranch },
     { id: 'kanban' as View, label: '칸반 보드', icon: Kanban },
     { id: 'backlog' as View, label: '백로그 관리', icon: ListTodo },
     { id: 'roles' as View, label: '권한 관리', icon: Users },
+    { id: 'common' as View, label: '공통 관리', icon: FolderOpen },
     { id: 'education' as View, label: '교육 관리', icon: GraduationCap },
     { id: 'settings' as View, label: '설정', icon: SettingsIcon },
   ];
@@ -79,6 +87,10 @@ export default function App() {
     switch (currentView) {
       case 'dashboard':
         return <Dashboard userRole={currentUser?.role || 'pm'} />;
+      case 'projects':
+        return <ProjectManagement userRole={currentUser?.role || 'pm'} />;
+      case 'parts':
+        return <PartManagement userRole={currentUser?.role || 'pm'} />;
       case 'phases':
         return <PhaseManagement userRole={currentUser?.role || 'pm'} />;
       case 'kanban':
@@ -87,6 +99,8 @@ export default function App() {
         return <BacklogManagement userRole={currentUser?.role || 'pm'} />;
       case 'roles':
         return <RoleManagement userRole={currentUser?.role || 'pm'} />;
+      case 'common':
+        return <CommonManagement userRole={currentUser?.role || 'pm'} />;
       case 'education':
         return <EducationManagement userRole={currentUser?.role || 'pm'} />;
       case 'settings':
@@ -110,18 +124,20 @@ export default function App() {
           userRole={currentUser.role}
         />
         
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header
-            currentUser={currentUser}
-            onAIToggle={() => setAiPanelOpen(!aiPanelOpen)}
-            onLogout={handleLogout}
-            canUseAI={canUseAI}
-          />
-          
-          <main className="flex-1 overflow-auto">
-            {renderContent()}
-          </main>
-        </div>
+        <ProjectProvider>
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <Header
+              currentUser={currentUser}
+              onAIToggle={() => setAiPanelOpen(!aiPanelOpen)}
+              onLogout={handleLogout}
+              canUseAI={canUseAI}
+            />
+            
+            <main className="flex-1 overflow-auto">
+              {renderContent()}
+            </main>
+          </div>
+        </ProjectProvider>
 
         {aiPanelOpen && canUseAI && (
           <AIAssistant onClose={() => setAiPanelOpen(false)} userRole={currentUser.role} />

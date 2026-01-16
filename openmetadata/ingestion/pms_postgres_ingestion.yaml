@@ -1,0 +1,77 @@
+# PMS PostgreSQL 메타데이터 인제스션 설정
+# OpenMetadata Ingestion Pipeline for PMS PostgreSQL Database
+
+source:
+  type: postgres
+  serviceName: pms-postgres
+  serviceConnection:
+    config:
+      type: Postgres
+      username: ${PMS_POSTGRES_USER}
+      password: ${PMS_POSTGRES_PASSWORD}
+      hostPort: ${PMS_POSTGRES_HOST}:${PMS_POSTGRES_PORT}
+      database: ${PMS_POSTGRES_DB}
+      
+      # SSL 설정 (필요시 활성화)
+      # sslMode: require
+      # sslConfig:
+      #   caCertificate: /path/to/ca.crt
+      
+  sourceConfig:
+    config:
+      type: DatabaseMetadata
+      
+      # 스키마 필터 - PMS 관련 스키마만 수집
+      schemaFilterPattern:
+        includes:
+          - auth
+          - project
+          - task
+          - chat
+          - report
+          - risk
+        excludes:
+          - information_schema
+          - pg_catalog
+          - pg_toast
+      
+      # 테이블 필터 (필요시 활성화)
+      # tableFilterPattern:
+      #   includes:
+      #     - ".*"
+      #   excludes:
+      #     - ".*_backup"
+      #     - ".*_temp"
+      
+      # 메타데이터 수집 옵션
+      markDeletedTables: true
+      includeTables: true
+      includeViews: true
+      
+      # 테이블/컬럼 주석 자동 수집 (DoD 체크리스트의 핵심!)
+      includeComments: true
+      
+      # 프로파일링 설정 (데이터 통계 수집)
+      generateSampleData: true
+      sampleDataCount: 50
+      
+      # 쿼리 사용 패턴 분석 (선택적)
+      # includeUsage: true
+      # queryLogDuration: 7
+
+sink:
+  type: metadata-rest
+  config: {}
+
+workflowConfig:
+  loggerLevel: INFO
+  openMetadataServerConfig:
+    hostPort: http://openmetadata-server:8585/api
+    authProvider: openmetadata
+    securityConfig:
+      jwtToken: ${OM_JWT_TOKEN}
+
+# 스케줄 설정 (Airflow DAG로 관리 시)
+# schedule:
+#   cron: "0 2 * * *"  # 매일 새벽 2시
+#   startDate: "2026-01-17"

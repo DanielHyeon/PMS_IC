@@ -5,14 +5,19 @@ export type ProjectStatus = 'PLANNING' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED'
 export interface Project {
   id: string;
   name: string;
+  code?: string;              // 프로젝트 코드 (INS-AI-2025-001)
   description: string;
   status: ProjectStatus;
   startDate: string;
   endDate: string;
   budget: number;
   progress: number;
-  managerId: string;
-  managerName?: string;
+  ownerId?: string;           // 프로젝트 소유자 (스폰서) ID
+  ownerName?: string;         // 프로젝트 소유자 이름
+  managerId: string;          // 프로젝트 관리자 (PM) ID
+  managerName?: string;       // 프로젝트 관리자 이름
+  isDefault?: boolean;        // 대표 프로젝트 여부
+  createdBy?: string;         // 생성자 ID
   createdAt: string;
   updatedAt: string;
 }
@@ -20,8 +25,11 @@ export interface Project {
 export interface ProjectSummary {
   id: string;
   name: string;
+  code?: string;
   status: ProjectStatus;
   progress: number;
+  managerName?: string;
+  isDefault?: boolean;
 }
 
 // RFP 관련 타입

@@ -3,7 +3,7 @@ import { useDrag, useDrop } from 'react-dnd';
 import { Clock, AlertTriangle, Flame, Lock, Plus } from 'lucide-react';
 import { UserRole } from '../App';
 import TaskFormModal from './TaskFormModal';
-import { useKanbanBoard, Task, Column } from '../../hooks/useKanbanBoard';
+import { useKanbanBoard, Task, Column as ColumnType } from '../../hooks/useKanbanBoard';
 import { getPriorityColor } from '../../utils/status';
 
 interface TaskCardProps {
@@ -71,13 +71,13 @@ const TaskCard = ({ task, canDrag, onEdit }: Omit<TaskCardProps, 'moveTask'>) =>
 };
 
 interface ColumnProps {
-  column: Column;
+  column: ColumnType;
   moveTask: (taskId: number, toColumn: string) => void;
   canDrag: boolean;
   onEditTask: (task: Task) => void;
 }
 
-const Column = ({ column, moveTask, canDrag, onEditTask }: ColumnProps) => {
+const KanbanColumn = ({ column, moveTask, canDrag, onEditTask }: ColumnProps) => {
   const [{ isOver }, drop] = useDrop({
     accept: 'task',
     drop: (item: { id: number }) => {
@@ -111,7 +111,7 @@ const Column = ({ column, moveTask, canDrag, onEditTask }: ColumnProps) => {
   );
 };
 
-const initialColumns: Column[] = [
+const initialColumns: ColumnType[] = [
   {
     id: 'backlog',
     title: '제품 백로그',
@@ -330,7 +330,7 @@ export default function KanbanBoard({ userRole }: { userRole: UserRole }) {
       {/* Kanban Board */}
       <div className="grid grid-cols-6 gap-4 overflow-x-auto">
         {columns.map((column) => (
-          <Column key={column.id} column={column} moveTask={moveTask} canDrag={canEdit} onEditTask={handleEditTask} />
+          <KanbanColumn key={column.id} column={column} moveTask={moveTask} canDrag={canEdit} onEditTask={handleEditTask} />
         ))}
       </div>
 

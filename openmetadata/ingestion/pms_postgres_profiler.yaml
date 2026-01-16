@@ -1,0 +1,64 @@
+# PMS PostgreSQL 데이터 프로파일러 설정
+# 데이터 품질 지표 및 통계 수집
+
+source:
+  type: postgres
+  serviceName: pms-postgres
+  serviceConnection:
+    config:
+      type: Postgres
+      username: ${PMS_POSTGRES_USER}
+      password: ${PMS_POSTGRES_PASSWORD}
+      hostPort: ${PMS_POSTGRES_HOST}:${PMS_POSTGRES_PORT}
+      database: ${PMS_POSTGRES_DB}
+
+  sourceConfig:
+    config:
+      type: Profiler
+      
+      # 프로파일링 옵션
+      generateSampleData: true
+      sampleDataCount: 100
+      
+      # 프로파일할 스키마/테이블 필터
+      schemaFilterPattern:
+        includes:
+          - project
+          - task
+      
+      # 특정 테이블만 프로파일링 (선택적)
+      tableFilterPattern:
+        includes:
+          - requirements
+          - rfps
+          - sprints
+          - user_stories
+          - tasks
+      
+      # 프로파일링 메트릭 설정
+      profileSample: 100  # 샘플 비율 (%)
+      profileSampleType: PERCENTAGE
+      
+      # 컬럼별 통계 수집 설정
+      computeMetrics: true
+      
+      # 중복 행 검사
+      computeTableMetrics: true
+
+processor:
+  type: orm-profiler
+  config:
+    # 테스트 스위트 설정 (데이터 품질 검사)
+    testSuites: []
+
+sink:
+  type: metadata-rest
+  config: {}
+
+workflowConfig:
+  loggerLevel: INFO
+  openMetadataServerConfig:
+    hostPort: http://openmetadata-server:8585/api
+    authProvider: openmetadata
+    securityConfig:
+      jwtToken: ${OM_JWT_TOKEN}
