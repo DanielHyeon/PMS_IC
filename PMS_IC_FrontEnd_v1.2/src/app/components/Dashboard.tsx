@@ -2,30 +2,11 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { TrendingUp, AlertTriangle, CheckCircle2, Clock, Target, DollarSign, Lock, Cpu, Cog, Layers, User } from 'lucide-react';
 import { UserRole } from '../App';
 import { trackProgressData, subProjectData, partLeaderData, phaseData, sprintVelocity, burndownData } from '../../mocks';
-
-// 상태별 색상 반환
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'normal': return { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200', dot: 'bg-green-500' };
-    case 'warning': return { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-200', dot: 'bg-yellow-500' };
-    case 'danger': return { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500' };
-    default: return { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-200', dot: 'bg-gray-500' };
-  }
-};
-
-const getStatusLabel = (status: string) => {
-  switch (status) {
-    case 'normal': return '정상';
-    case 'warning': return '주의';
-    case 'danger': return '위험';
-    default: return '알 수 없음';
-  }
-};
+import { getStatusColor, getStatusLabel, getTrackColor, getActivityColor } from '../../utils/status';
 
 export default function Dashboard({ userRole }: { userRole: UserRole }) {
   // 역할별 접근 권한
   const canViewBudget = ['sponsor', 'pmo_head', 'pm'].includes(userRole);
-  const canViewDetailedMetrics = !['auditor'].includes(userRole);
   const isReadOnly = ['auditor', 'business_analyst'].includes(userRole);
 
   return (
@@ -207,11 +188,7 @@ export default function Dashboard({ userRole }: { userRole: UserRole }) {
                 <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-3 px-4 font-medium text-gray-900">{project.name}</td>
                   <td className="py-3 px-4">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      project.track === 'AI' ? 'bg-blue-100 text-blue-700' :
-                      project.track === 'SI' ? 'bg-green-100 text-green-700' :
-                      'bg-purple-100 text-purple-700'
-                    }`}>{project.track}</span>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${getTrackColor(project.track)}`}>{project.track}</span>
                   </td>
                   <td className="py-3 px-4 text-gray-600">{project.leader}</td>
                   <td className="py-3 px-4">
@@ -392,10 +369,7 @@ export default function Dashboard({ userRole }: { userRole: UserRole }) {
             { user: '최지훈', action: '긴급 이슈 #47 해결 완료', time: '5시간 전', type: 'success' },
           ].map((activity, idx) => (
             <div key={idx} className="flex items-center gap-4 py-3 border-b border-gray-100 last:border-0">
-              <div className={`w-2 h-2 rounded-full ${
-                activity.type === 'success' ? 'bg-green-500' :
-                activity.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
-              }`}></div>
+              <div className={`w-2 h-2 rounded-full ${getActivityColor(activity.type)}`}></div>
               <div className="flex-1">
                 <p className="text-sm text-gray-900">
                   <span className="font-medium">{activity.user}</span> {activity.action}

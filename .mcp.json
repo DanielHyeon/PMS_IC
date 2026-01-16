@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "mcpServers": {
+    "linear": {
+      "enabled": true,
+      "note": "이슈·사이클·프로젝트 관리에 필수"
+    },
+    "context7": {
+      "enabled": true,
+      "note": "라이브러리 문서·API 레퍼런스 조회"
+    },
+    "serena": {
+      "enabled": false,
+      "note": "코딩 단계에서만 필요 → 평소 꺼둠"
+    },
+    "greptile": {
+      "enabled": false,
+      "note": "코드 검색·리팩토링 시에만 켜기"
+    }
+  },
+  "defaultMode": "planning",
+  "autoToggle": {
+    "onDirectory": {
+      "backend": ["serena", "greptile"],
+      "frontend": ["serena"]
+    }
+  }
+}

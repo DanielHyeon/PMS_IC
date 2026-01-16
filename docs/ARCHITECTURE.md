@@ -53,6 +53,48 @@ Neo4j GraphRAG 기반의 지능형 챗봇을 통해 프로젝트 관리 의사�
 
 ---
 
+### 1.4 공통 개발 원칙
+
+  이 워크스페이스는 여러 AI 관련 프로젝트를 포함하며, 공통 개발 원칙을 따릅니다.
+
+  ### 테스트 기반 개발 (TDD)
+  - **새로운 기능 구현 시**: 테스트를 먼저 작성한 후 구현
+  - **테스트 프레임워크**: pytest 사용
+  - **테스트 범위**: 핵심 로직에 대한 단위 테스트 필수
+  
+  ### Git 워크플로우
+  - **커밋 규칙**:
+    - 테스트 통과 후 커밋
+    - 변경한 파일만 선택적으로 add (`git add <specific-files>`)
+    - 기능별 작은 단위로 커밋
+  - **브랜치 전략**:
+    - Git Worktree를 활용한 멀티 브랜치 작업 지원 (상세: `WORKTREE_GUIDE.md`)
+    - 직접 push 금지 → PR을 통한 코드 리뷰
+  - **커밋 메시지**: 명확하고 설명적인 메시지 작성 (예: "Add Slack event validation")
+  
+  ### MCP (Model Context Protocol) 활용
+  - **Context7**: 라이브러리 문서 조회
+  - **Sequential**: 복잡한 분석 및 디버깅
+  - **Linear**: 이슈 트래킹 및 프로젝트 관리
+  
+  ### FrontEnd Code Style
+- Functional components
+- Airbnb ESLint
+- JSDoc for public functions
+- 한글 주석은 영어로 변환
+
+### FrontEnd Commands
+- dev: `npm run dev`
+- build: `npm run build`
+- test: `npm test`
+- lint: `npm run lint`
+
+### FrontEnd Important Notes
+- API calls는 /api 폴더에서만
+
+
+---
+
 ## 2. 전체 아키텍처
 
 ### 2.1 시스템 구성도

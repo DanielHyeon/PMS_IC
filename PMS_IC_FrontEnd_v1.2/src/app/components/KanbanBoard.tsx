@@ -1,25 +1,10 @@
 import { useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-import { User, Clock, AlertTriangle, Flame, Lock, Plus } from 'lucide-react';
+import { Clock, AlertTriangle, Flame, Lock, Plus } from 'lucide-react';
 import { UserRole } from '../App';
 import TaskFormModal from './TaskFormModal';
-
-interface Task {
-  id: number;
-  title: string;
-  assignee: string;
-  priority: 'high' | 'medium' | 'low';
-  storyPoints: number;
-  dueDate: string;
-  isFirefighting?: boolean;
-  labels: string[];
-}
-
-interface Column {
-  id: string;
-  title: string;
-  tasks: Task[];
-}
+import { useKanbanBoard, Task, Column } from '../../hooks/useKanbanBoard';
+import { getPriorityColor } from '../../utils/status';
 
 interface TaskCardProps {
   task: Task;
@@ -28,7 +13,7 @@ interface TaskCardProps {
   onEdit: (task: Task) => void;
 }
 
-const TaskCard = ({ task, moveTask, canDrag, onEdit }: TaskCardProps) => {
+const TaskCard = ({ task, canDrag, onEdit }: Omit<TaskCardProps, 'moveTask'>) => {
   const [{ isDragging }, drag] = useDrag({
     type: 'task',
     item: { id: task.id },
@@ -37,17 +22,6 @@ const TaskCard = ({ task, moveTask, canDrag, onEdit }: TaskCardProps) => {
       isDragging: monitor.isDragging(),
     }),
   });
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-700 border-red-300';
-      case 'medium':
-        return 'bg-amber-100 text-amber-700 border-amber-300';
-      default:
-        return 'bg-green-100 text-green-700 border-green-300';
-    }
-  };
 
   return (
     <div
@@ -130,7 +104,7 @@ const Column = ({ column, moveTask, canDrag, onEditTask }: ColumnProps) => {
       </div>
       <div className="space-y-3">
         {column.tasks.map((task) => (
-          <TaskCard key={task.id} task={task} moveTask={moveTask} canDrag={canDrag} onEdit={onEditTask} />
+          <TaskCard key={task.id} task={task} canDrag={canDrag} onEdit={onEditTask} />
         ))}
       </div>
     </div>
@@ -268,59 +242,17 @@ const initialColumns: Column[] = [
 ];
 
 export default function KanbanBoard({ userRole }: { userRole: UserRole }) {
-  const [columns, setColumns] = useState<Column[]>(initialColumns);
+  const canEdit = ['pm', 'developer', 'qa'].includes(userRole);
+  const isReadOnly = ['auditor', 'sponsor'].includes(userRole);
+
+  const { columns, stats, moveTask, addTask, updateTask, deleteTask } = useKanbanBoard(initialColumns, canEdit);
+
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [showEditTaskModal, setShowEditTaskModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  const canEdit = ['pm', 'developer', 'qa'].includes(userRole);
-  const isReadOnly = ['auditor', 'sponsor'].includes(userRole);
-
-  const moveTask = (taskId: number, toColumnId: string) => {
-    if (!canEdit) return;
-
-    setColumns((prevColumns) => {
-      let taskToMove: Task | null = null;
-      let fromColumnId: string | null = null;
-
-      prevColumns.forEach((column) => {
-        const taskIndex = column.tasks.findIndex((t) => t.id === taskId);
-        if (taskIndex !== -1) {
-          taskToMove = column.tasks[taskIndex];
-          fromColumnId = column.id;
-        }
-      });
-
-      if (!taskToMove || !fromColumnId || fromColumnId === toColumnId) {
-        return prevColumns;
-      }
-
-      return prevColumns.map((column) => {
-        if (column.id === fromColumnId) {
-          return {
-            ...column,
-            tasks: column.tasks.filter((t) => t.id !== taskId),
-          };
-        } else if (column.id === toColumnId) {
-          return {
-            ...column,
-            tasks: [...column.tasks, taskToMove!],
-          };
-        }
-        return column;
-      });
-    });
-  };
-
   const handleAddTask = (task: Task) => {
-    setColumns((prev) =>
-      prev.map((col) => {
-        if (col.id === 'backlog') {
-          return { ...col, tasks: [...col.tasks, task] };
-        }
-        return col;
-      })
-    );
+    addTask(task);
     setShowAddTaskModal(false);
   };
 
@@ -330,37 +262,17 @@ export default function KanbanBoard({ userRole }: { userRole: UserRole }) {
   };
 
   const handleUpdateTask = (task: Task) => {
-    setColumns((prev) =>
-      prev.map((col) => ({
-        ...col,
-        tasks: col.tasks.map((t) => (t.id === task.id ? task : t)),
-      }))
-    );
+    updateTask(task);
     setShowEditTaskModal(false);
     setEditingTask(null);
   };
 
   const handleDeleteTask = () => {
     if (!editingTask || !confirm('이 작업을 삭제하시겠습니까?')) return;
-
-    setColumns((prev) =>
-      prev.map((col) => ({
-        ...col,
-        tasks: col.tasks.filter((t) => t.id !== editingTask.id),
-      }))
-    );
-
+    deleteTask(editingTask.id);
     setShowEditTaskModal(false);
     setEditingTask(null);
   };
-
-  const totalTasks = columns.reduce((sum, col) => sum + col.tasks.length, 0);
-  const completedTasks = columns.find((col) => col.id === 'done')?.tasks.length || 0;
-  const inProgressTasks = columns.find((col) => col.id === 'inProgress')?.tasks.length || 0;
-  const firefightingTasks = columns.reduce(
-    (sum, col) => sum + col.tasks.filter((t) => t.isFirefighting).length,
-    0
-  );
 
   return (
     <div className="p-6">
@@ -395,22 +307,22 @@ export default function KanbanBoard({ userRole }: { userRole: UserRole }) {
         <div className="grid grid-cols-4 gap-4">
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <p className="text-sm text-gray-500">전체 작업</p>
-            <p className="text-2xl font-semibold text-gray-900 mt-1">{totalTasks}</p>
+            <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.totalTasks}</p>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <p className="text-sm text-gray-500">진행 중</p>
-            <p className="text-2xl font-semibold text-blue-600 mt-1">{inProgressTasks}</p>
+            <p className="text-2xl font-semibold text-blue-600 mt-1">{stats.inProgressTasks}</p>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <p className="text-sm text-gray-500">완료</p>
-            <p className="text-2xl font-semibold text-green-600 mt-1">{completedTasks}</p>
+            <p className="text-2xl font-semibold text-green-600 mt-1">{stats.completedTasks}</p>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center gap-2">
               <AlertTriangle className="text-red-600" size={16} />
               <p className="text-sm text-gray-500">긴급 이슈</p>
             </div>
-            <p className="text-2xl font-semibold text-red-600 mt-1">{firefightingTasks}</p>
+            <p className="text-2xl font-semibold text-red-600 mt-1">{stats.firefightingTasks}</p>
           </div>
         </div>
       </div>

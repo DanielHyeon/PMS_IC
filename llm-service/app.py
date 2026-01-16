@@ -8,6 +8,7 @@ from flask_cors import CORS
 from llama_cpp import Llama
 from rag_service_neo4j import RAGServiceNeo4j  # Neo4j 기반 GraphRAG 서비스 사용
 from chat_workflow import ChatWorkflow
+from service_state import get_state, LLMServiceState
 import os
 import logging
 
@@ -24,18 +25,13 @@ MAX_TOKENS = int(os.getenv("MAX_TOKENS", "256"))  # Gemma 3는 더 긴 응답 �
 TEMPERATURE = float(os.getenv("TEMPERATURE", "0.7"))
 TOP_P = float(os.getenv("TOP_P", "0.9"))
 
-# 전역 모델 인스턴스
-llm = None
-rag_service = None
-chat_workflow = None
-current_model_path = DEFAULT_MODEL_PATH
+# 싱글톤 상태 관리 인스턴스
+state: LLMServiceState = get_state()
 
 def load_model(model_path=None):
-    """모델 및 RAG 서비스 로드"""
-    global llm, rag_service, chat_workflow, current_model_path
-
+    """모델 및 RAG 서비스 로드 (싱글톤 상태 사용)"""
     if model_path is None:
-        model_path = current_model_path
+        model_path = state.current_model_path
 
     # 모델 파일 존재 확인 (로드 전에 먼저 확인)
     if not os.path.exists(model_path):
@@ -43,75 +39,72 @@ def load_model(model_path=None):
         logger.error(error_msg)
         raise FileNotFoundError(error_msg)
 
-    if llm is None or model_path != current_model_path:
+    if state.llm is None or model_path != state.current_model_path:
         logger.info(f"Loading model from {model_path}")
 
         try:
             # 기존 모델이 있으면 해제
-            if llm is not None:
+            if state.llm is not None:
                 logger.info("Unloading previous model...")
                 try:
-                    del llm
+                    del state.llm
                 except Exception as del_error:
                     logger.warning(f"Error deleting old model: {del_error}")
-                llm = None
+                state.llm = None
 
             # 새 모델 로드
             logger.info(f"Initializing Llama model: {model_path}")
             n_ctx = int(os.getenv("LLM_N_CTX", "4096"))
             n_threads = int(os.getenv("LLM_N_THREADS", "6"))
             n_gpu_layers = int(os.getenv("LLM_N_GPU_LAYERS", "0"))
-            llm = Llama(
+            state.llm = Llama(
                 model_path=model_path,
                 n_ctx=n_ctx,  # Gemma 3는 더 긴 컨텍스트 지원 (최대 8192)
                 n_threads=n_threads,  # Gemma 3 12B는 더 많은 스레드 활용 가능
                 verbose=True,  # 디버깅을 위해 True로 변경
                 n_gpu_layers=n_gpu_layers  # GPU 사용 시 양수 또는 -1
             )
-            current_model_path = model_path
+            state.current_model_path = model_path
             logger.info(f"Model loaded successfully: {model_path}")
         except Exception as e:
             logger.error(f"Failed to load model: {e}", exc_info=True)
-            llm = None  # 실패 시 명시적으로 None 설정
+            state.llm = None  # 실패 시 명시적으로 None 설정
             raise RuntimeError(f"Failed to load model from {model_path}: {str(e)}") from e
 
     # 모델이 로드되지 않았으면 에러
-    if llm is None:
+    if state.llm is None:
         raise RuntimeError(f"Model is None after load attempt. Path: {model_path}")
 
-    if rag_service is None:
+    if state.rag_service is None:
         try:
             logger.info("Loading RAG service with Neo4j (vector + graph)...")
-            rag_service = RAGServiceNeo4j()
+            state.rag_service = RAGServiceNeo4j()
             logger.info("RAG service with Neo4j loaded successfully")
         except Exception as e:
             logger.error(f"Failed to load RAG service: {e}", exc_info=True)
             # RAG 서비스 실패는 치명적이지 않음
-            rag_service = None
+            state.rag_service = None
 
-    if chat_workflow is None:
+    if state.chat_workflow is None:
         try:
             logger.info("Initializing LangGraph chat workflow...")
-            if llm is None:
+            if state.llm is None:
                 raise RuntimeError("Cannot initialize workflow: model is None")
-            chat_workflow = ChatWorkflow(llm, rag_service, model_path=current_model_path)
+            state.chat_workflow = ChatWorkflow(state.llm, state.rag_service, model_path=state.current_model_path)
             logger.info("Chat workflow initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize chat workflow: {e}", exc_info=True)
             # 워크플로우 실패는 치명적이지 않음 (레거시 모드 사용 가능)
-            chat_workflow = None
+            state.chat_workflow = None
 
-    return llm, rag_service, chat_workflow
+    return state.get_all()
 
 @app.route("/health", methods=["GET"])
 def health():
     """헬스 체크"""
-    return jsonify({
-        "status": "healthy",
-        "model_loaded": llm is not None,
-        "rag_service_loaded": rag_service is not None,
-        "chat_workflow_loaded": chat_workflow is not None
-    })
+    health_info = state.health_status()
+    health_info["status"] = "healthy"
+    return jsonify(health_info)
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
@@ -460,12 +453,12 @@ def search_documents():
 @app.route("/api/model/current", methods=["GET"])
 def get_current_model():
     """현재 사용 중인 모델 정보 조회"""
-    global current_model_path
     try:
+        model_path = state.current_model_path
         return jsonify({
-            "currentModel": current_model_path,
-            "status": "active" if llm is not None else "not_loaded",
-            "timestamp": os.path.getmtime(current_model_path) if os.path.exists(current_model_path) else None
+            "currentModel": model_path,
+            "status": "active" if state.is_model_loaded else "not_loaded",
+            "timestamp": os.path.getmtime(model_path) if os.path.exists(model_path) else None
         })
     except Exception as e:
         logger.error(f"Error getting current model: {e}", exc_info=True)
@@ -521,76 +514,69 @@ def _load_new_model(new_model_path):
         raise RuntimeError(f"모델 초기화 실패: {str(llama_error)}") from llama_error
 
 def _update_global_state(new_llm, new_model_path, old_llm):
-    """전역 상태 업데이트"""
-    global llm, current_model_path, chat_workflow
-    
+    """전역 상태 업데이트 (싱글톤 상태 사용)"""
     if old_llm is not None:
         try:
             logger.info("Unloading previous model...")
             del old_llm
         except Exception as del_error:
             logger.warning(f"Error deleting old model: {del_error}")
-    
-    llm = new_llm
-    current_model_path = new_model_path
-    chat_workflow = None
+
+    state.llm = new_llm
+    state.current_model_path = new_model_path
+    state.chat_workflow = None
 
 def _ensure_rag_service():
-    """RAG 서비스 확인 및 초기화"""
-    global rag_service
-    if rag_service is None:
+    """RAG 서비스 확인 및 초기화 (싱글톤 상태 사용)"""
+    if state.rag_service is None:
         try:
             logger.info("Loading RAG service with Neo4j...")
             from rag_service_neo4j import RAGServiceNeo4j
-            rag_service = RAGServiceNeo4j()
+            state.rag_service = RAGServiceNeo4j()
             logger.info("RAG service with Neo4j loaded successfully")
         except Exception as e:
             logger.error(f"Failed to load RAG service: {e}", exc_info=True)
-            rag_service = None
+            state.rag_service = None
 
 def _reinitialize_workflow():
-    """워크플로우 재초기화"""
-    global llm, rag_service, chat_workflow, current_model_path
+    """워크플로우 재초기화 (싱글톤 상태 사용)"""
     try:
         logger.info("Initializing LangGraph chat workflow with new model...")
-        chat_workflow = ChatWorkflow(llm, rag_service, model_path=current_model_path)
+        state.chat_workflow = ChatWorkflow(state.llm, state.rag_service, model_path=state.current_model_path)
         logger.info("Chat workflow initialized successfully")
         return True
     except Exception as e:
         logger.error(f"Failed to initialize chat workflow: {e}", exc_info=True)
-        chat_workflow = None
+        state.chat_workflow = None
         return False
 
 def _restore_previous_model(old_llm, old_workflow, old_model_path):
-    """이전 모델 복구"""
-    global llm, chat_workflow, current_model_path
+    """이전 모델 복구 (싱글톤 상태 사용)"""
     if old_llm is not None:
         logger.info("Restoring previous model...")
-        llm = old_llm
-        chat_workflow = old_workflow
-        current_model_path = old_model_path
+        state.llm = old_llm
+        state.chat_workflow = old_workflow
+        state.current_model_path = old_model_path
         logger.info("Previous model restored successfully")
     else:
-        llm = None
-        chat_workflow = None
+        state.llm = None
+        state.chat_workflow = None
 
 @app.route("/api/model/change", methods=["PUT"])
 def change_model():
-    """모델 변경 API"""
-    global llm, chat_workflow, current_model_path, rag_service
-
+    """모델 변경 API (싱글톤 상태 사용)"""
     try:
         logger.info(f"Received model change request: {request.json}")
-        
+
         new_model_path = _validate_model_change_request(request.json)
         _verify_model_file_exists(new_model_path)
-        
-        logger.info(f"Changing model from {current_model_path} to {new_model_path}")
+
+        logger.info(f"Changing model from {state.current_model_path} to {new_model_path}")
 
         # 기존 모델 및 워크플로우 백업 (복구용)
-        old_llm = llm
-        old_workflow = chat_workflow
-        old_model_path = current_model_path
+        old_llm = state.llm
+        old_workflow = state.chat_workflow
+        old_model_path = state.current_model_path
         
         new_llm = None
         try:
@@ -600,10 +586,10 @@ def change_model():
             workflow_initialized = _reinitialize_workflow()
             
             logger.info(f"Model successfully changed to {new_model_path}")
-            
+
             return jsonify({
                 "status": "success",
-                "currentModel": current_model_path,
+                "currentModel": state.current_model_path,
                 "message": f"Model successfully changed to {new_model_path}",
                 "workflow_initialized": workflow_initialized
             })
@@ -673,7 +659,7 @@ def get_available_models():
                     "path": file_path,
                     "size": file_size,
                     "size_mb": round(file_size / (1024 * 1024), 2),
-                    "is_current": file_path == current_model_path
+                    "is_current": file_path == state.current_model_path
                 })
 
         return jsonify({"models": models})
@@ -684,7 +670,7 @@ def get_available_models():
 
 # 서비스 시작 시 모델 자동 로드 (앱 컨텍스트에서)
 def init_llm_service():
-    """Initialize LLM service on startup"""
+    """Initialize LLM service on startup (싱글톤 상태 사용)"""
     try:
         logger.info("=" * 60)
         logger.info("Initializing LLM service on startup...")
@@ -693,9 +679,9 @@ def init_llm_service():
         load_model()
         logger.info("=" * 60)
         logger.info("LLM service initialized successfully!")
-        logger.info(f"  - Model loaded: {llm is not None}")
-        logger.info(f"  - RAG service loaded: {rag_service is not None}")
-        logger.info(f"  - Chat workflow loaded: {chat_workflow is not None}")
+        logger.info(f"  - Model loaded: {state.is_model_loaded}")
+        logger.info(f"  - RAG service loaded: {state.is_rag_loaded}")
+        logger.info(f"  - Chat workflow loaded: {state.is_workflow_loaded}")
         logger.info("=" * 60)
     except Exception as e:
         logger.error("=" * 60)
