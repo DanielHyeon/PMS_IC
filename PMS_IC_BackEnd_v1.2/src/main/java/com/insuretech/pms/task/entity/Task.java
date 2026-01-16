@@ -55,11 +55,20 @@ public class Task extends BaseEntity {
     @Column(name = "tags", length = 500)
     private String tags;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "track_type", length = 20)
+    @Builder.Default
+    private TrackType trackType = TrackType.COMMON;
+
     public enum Priority {
         LOW, MEDIUM, HIGH, CRITICAL
     }
 
     public enum TaskStatus {
         TODO, IN_PROGRESS, REVIEW, DONE
+    }
+
+    public enum TrackType {
+        AI, SI, COMMON
     }
 }

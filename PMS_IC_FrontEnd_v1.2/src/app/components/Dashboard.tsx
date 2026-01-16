@@ -1,6 +1,52 @@
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { TrendingUp, AlertTriangle, CheckCircle2, Clock, Target, DollarSign, Lock } from 'lucide-react';
+import { TrendingUp, AlertTriangle, CheckCircle2, Clock, Target, DollarSign, Lock, Cpu, Cog, Layers, User } from 'lucide-react';
 import { UserRole } from '../App';
+
+// 투트랙 진척률 데이터 (AI/SI/공통)
+const trackProgressData = {
+  ai: { progress: 58, status: 'normal', tasks: 45, completed: 26 },
+  si: { progress: 72, status: 'normal', tasks: 38, completed: 27 },
+  common: { progress: 45, status: 'warning', tasks: 22, completed: 10 },
+};
+
+// 서브 프로젝트별 상태 데이터
+const subProjectData = [
+  { name: 'OCR 모델 개발', track: 'AI', progress: 65, status: 'normal', leader: '박민수' },
+  { name: '문서 분류 AI', track: 'AI', progress: 48, status: 'warning', leader: '이영희' },
+  { name: '청구 심사 자동화', track: 'AI', progress: 72, status: 'normal', leader: '최지훈' },
+  { name: '레거시 시스템 연동', track: 'SI', progress: 80, status: 'normal', leader: '김철수' },
+  { name: '데이터 마이그레이션', track: 'SI', progress: 55, status: 'warning', leader: '정수민' },
+  { name: '보안 인증 모듈', track: '공통', progress: 35, status: 'danger', leader: '한지영' },
+  { name: '통합 테스트 환경', track: '공통', progress: 60, status: 'normal', leader: '오민석' },
+];
+
+// 파트 리더별 현황 데이터
+const partLeaderData = [
+  { name: '박민수', role: 'AI 파트 리더', tasks: 15, completed: 10, inProgress: 4, blocked: 1, status: 'normal' },
+  { name: '김철수', role: 'SI 파트 리더', tasks: 12, completed: 9, inProgress: 3, blocked: 0, status: 'normal' },
+  { name: '한지영', role: '공통 파트 리더', tasks: 8, completed: 3, inProgress: 3, blocked: 2, status: 'danger' },
+  { name: '이영희', role: 'AI 개발자', tasks: 10, completed: 5, inProgress: 4, blocked: 1, status: 'warning' },
+  { name: '정수민', role: 'SI 개발자', tasks: 11, completed: 6, inProgress: 5, blocked: 0, status: 'normal' },
+];
+
+// 상태별 색상 반환
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'normal': return { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200', dot: 'bg-green-500' };
+    case 'warning': return { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-200', dot: 'bg-yellow-500' };
+    case 'danger': return { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500' };
+    default: return { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-200', dot: 'bg-gray-500' };
+  }
+};
+
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case 'normal': return '정상';
+    case 'warning': return '주의';
+    case 'danger': return '위험';
+    default: return '알 수 없음';
+  }
+};
 
 const phaseData = [
   { phase: '1단계', planned: 100, actual: 100, status: 'completed' },
@@ -120,6 +166,168 @@ export default function Dashboard({ userRole }: { userRole: UserRole }) {
               <CheckCircle2 className="text-purple-600" size={28} />
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* AI/SI/공통 투트랙 진척률 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`bg-white rounded-xl shadow-sm border p-6 ${getStatusColor(trackProgressData.ai.status).border}`}>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Cpu className="text-blue-600" size={20} />
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900">AI 트랙</h4>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(trackProgressData.ai.status).bg} ${getStatusColor(trackProgressData.ai.status).text}`}>
+                {getStatusLabel(trackProgressData.ai.status)}
+              </span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">진척률</span>
+              <span className="font-semibold">{trackProgressData.ai.progress}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div className="bg-blue-500 h-3 rounded-full transition-all" style={{ width: `${trackProgressData.ai.progress}%` }}></div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">완료: {trackProgressData.ai.completed}/{trackProgressData.ai.tasks} 작업</p>
+          </div>
+        </div>
+
+        <div className={`bg-white rounded-xl shadow-sm border p-6 ${getStatusColor(trackProgressData.si.status).border}`}>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+              <Cog className="text-green-600" size={20} />
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900">SI 트랙</h4>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(trackProgressData.si.status).bg} ${getStatusColor(trackProgressData.si.status).text}`}>
+                {getStatusLabel(trackProgressData.si.status)}
+              </span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">진척률</span>
+              <span className="font-semibold">{trackProgressData.si.progress}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div className="bg-green-500 h-3 rounded-full transition-all" style={{ width: `${trackProgressData.si.progress}%` }}></div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">완료: {trackProgressData.si.completed}/{trackProgressData.si.tasks} 작업</p>
+          </div>
+        </div>
+
+        <div className={`bg-white rounded-xl shadow-sm border p-6 ${getStatusColor(trackProgressData.common.status).border}`}>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+              <Layers className="text-purple-600" size={20} />
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900">공통 트랙</h4>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(trackProgressData.common.status).bg} ${getStatusColor(trackProgressData.common.status).text}`}>
+                {getStatusLabel(trackProgressData.common.status)}
+              </span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">진척률</span>
+              <span className="font-semibold">{trackProgressData.common.progress}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div className="bg-purple-500 h-3 rounded-full transition-all" style={{ width: `${trackProgressData.common.progress}%` }}></div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">완료: {trackProgressData.common.completed}/{trackProgressData.common.tasks} 작업</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 서브 프로젝트별 상태 */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 className="font-semibold text-gray-900 mb-4">서브 프로젝트별 상태</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-4 font-medium text-gray-600">프로젝트명</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">트랙</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">담당자</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">진척률</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {subProjectData.map((project, idx) => (
+                <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                  <td className="py-3 px-4 font-medium text-gray-900">{project.name}</td>
+                  <td className="py-3 px-4">
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      project.track === 'AI' ? 'bg-blue-100 text-blue-700' :
+                      project.track === 'SI' ? 'bg-green-100 text-green-700' :
+                      'bg-purple-100 text-purple-700'
+                    }`}>{project.track}</span>
+                  </td>
+                  <td className="py-3 px-4 text-gray-600">{project.leader}</td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-20 bg-gray-200 rounded-full h-2">
+                        <div className={`h-2 rounded-full ${
+                          project.status === 'normal' ? 'bg-green-500' :
+                          project.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+                        }`} style={{ width: `${project.progress}%` }}></div>
+                      </div>
+                      <span className="text-gray-700">{project.progress}%</span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status).bg} ${getStatusColor(project.status).text}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${getStatusColor(project.status).dot}`}></span>
+                      {getStatusLabel(project.status)}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 파트 리더별 현황 */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 className="font-semibold text-gray-900 mb-4">파트 리더별 현황</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {partLeaderData.map((leader, idx) => (
+            <div key={idx} className={`border rounded-lg p-4 ${getStatusColor(leader.status).border}`}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                  <User className="text-gray-600" size={20} />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">{leader.name}</p>
+                  <p className="text-xs text-gray-500">{leader.role}</p>
+                </div>
+                <span className={`ml-auto px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(leader.status).bg} ${getStatusColor(leader.status).text}`}>
+                  {getStatusLabel(leader.status)}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="bg-green-50 rounded p-2">
+                  <p className="text-lg font-semibold text-green-700">{leader.completed}</p>
+                  <p className="text-xs text-green-600">완료</p>
+                </div>
+                <div className="bg-blue-50 rounded p-2">
+                  <p className="text-lg font-semibold text-blue-700">{leader.inProgress}</p>
+                  <p className="text-xs text-blue-600">진행중</p>
+                </div>
+                <div className="bg-red-50 rounded p-2">
+                  <p className="text-lg font-semibold text-red-700">{leader.blocked}</p>
+                  <p className="text-xs text-red-600">블로커</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
