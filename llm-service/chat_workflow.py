@@ -638,13 +638,50 @@ RAG 문서와 제공된 컨텍스트를 최우선으로 사용하고, 근거가 
 
     def _clean_response(self, reply: str) -> str:
         """응답 정리"""
+        reply = self._remove_special_tokens(reply)
+        reply = self._validate_model_name(reply)
+        reply = self._remove_meta_text(reply)
+        reply = self._remove_prompt_artifacts(reply)
+        reply = self._sanitize_characters(reply)
+        return reply.strip()
 
-        # Gemma 특수 토큰 제거
+    def _remove_special_tokens(self, reply: str) -> str:
+        """특수 토큰 제거"""
         reply = reply.replace("<start_of_turn>", "").replace("<end_of_turn>", "")
-        # im_end 토큰 제거 (깨지는 문자 방지)
         reply = reply.replace("<|im_end|>", "").replace("|im_end|>", "").replace("<|im_end", "")
+        return reply
 
-        # 삼중 따옴표로 감싸진 블록 제거 (모델 이름, 구분선, 질문 등 포함)
+    def _validate_model_name(self, reply: str) -> str:
+        """모델 이름 검증 및 교체"""
+        wrong_model_names = ["니콜라스", "nicolas", "알렉스", "alex", "사라", "sara", 
+                            "gpt-4", "chatgpt", "claude", "gemini", "palm", "gpt4"]
+        
+        correct_name = "로컬 LLM"
+        if self.model_path:
+            import os
+            model_file = os.path.basename(self.model_path)
+            if "lfm2" in model_file.lower():
+                correct_name = "Llama Forge Model 2 (LFM2)"
+            elif "gemma" in model_file.lower():
+                correct_name = "Gemma 3"
+        
+        reply_lower = reply.lower()
+        for wrong_name in wrong_model_names:
+            if wrong_name.lower() in reply_lower:
+                return f"저는 {correct_name} 모델입니다."
+        
+        model_keywords = ["모델", "model", "이름", "name", "너는", "당신은", "너의", "당신의"]
+        has_model_keyword = any(keyword in reply_lower for keyword in model_keywords)
+        has_correct_name = any(correct in reply for correct in ["Llama", "Gemma", "로컬 LLM", "LFM2"])
+        
+        if has_model_keyword and not has_correct_name:
+            return f"저는 {correct_name} 모델입니다."
+        
+        return reply
+
+    def _remove_meta_text(self, reply: str) -> str:
+        """메타 텍스트 제거"""
+        # 삼중 따옴표로 감싸진 블록 제거
         reply = re.sub(r"'''[\s\S]*?'''", "", reply)
         reply = re.sub(r'"""[\s\S]*?"""', "", reply)
         if reply.startswith("'''") or reply.startswith('"""'):
@@ -653,10 +690,57 @@ RAG 문서와 제공된 컨텍스트를 최우선으로 사용하고, 근거가 
             reply = reply[:-3].rstrip()
         
         # 모델 이름과 구분선이 포함된 앞부분 제거
-        # 예: "Llama Forge Model 2 (LFM2)\n===\n질문내용"
         reply = re.sub(r"^.*?(Llama Forge Model|Gemma|LFM2|로컬 LLM).*?\n=+\n.*?\n", "", reply, flags=re.MULTILINE | re.IGNORECASE)
         reply = re.sub(r"^.*?=+\n.*?\n", "", reply, flags=re.MULTILINE)
         
+        # 메타 설명 텍스트 제거
+        meta_patterns = [
+            r"제공된 정보로.*?완벽하게 답변했습니다.*?",
+            r"제공된 정보로.*?답변했습니다.*?",
+            r"이제 사용자님의 요청대로.*?제공",
+            r"이제 사용자의 요청대로.*?제공",
+            r"사용자님의 요청대로.*?설명.*?제공",
+            r"사용자의 요청대로.*?설명.*?제공",
+            r"요청대로.*?한국어로.*?제공",
+            r"요청하신.*?한국어로.*?제공",
+        ]
+        for pattern in meta_patterns:
+            reply = re.sub(pattern, "", reply, flags=re.IGNORECASE | re.DOTALL)
+        
+        # 응답 앞부분에서 모델 이름과 구분선 제거
+        lines = reply.splitlines()
+        start_idx = 0
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if re.search(r"(llama forge model|gemma|lfm2|로컬 llm)", stripped, re.IGNORECASE) or re.match(r"^=+$", stripped):
+                start_idx = i + 1
+            elif (stripped.endswith("?") or stripped.endswith("주세요") or stripped.endswith("해주세요")) and i < len(lines) - 1:
+                start_idx = i + 1
+            else:
+                break
+        
+        if start_idx > 0:
+            reply = "\n".join(lines[start_idx:]).strip()
+        
+        # 응답 뒷부분에서 메타 설명 제거
+        lines = reply.splitlines()
+        end_idx = len(lines)
+        for i in range(len(lines) - 1, -1, -1):
+            line = lines[i].strip()
+            if re.search(r"제공된 정보로.*?답변했습니다", line, re.IGNORECASE) or \
+               re.search(r"이제 사용자.*?요청대로", line, re.IGNORECASE) or \
+               re.search(r"요청.*?한국어로.*?제공", line, re.IGNORECASE) or \
+               re.search(r"완벽하게 답변했습니다", line, re.IGNORECASE):
+                end_idx = i
+                break
+        
+        if end_idx < len(lines):
+            reply = "\n".join(lines[:end_idx]).strip()
+        
+        return reply
+
+    def _remove_prompt_artifacts(self, reply: str) -> str:
+        """프롬프트 아티팩트 제거"""
         # 불필요한 role 레이블 제거
         if reply.startswith("model"):
             reply = reply[5:].strip()
@@ -672,7 +756,7 @@ RAG 문서와 제공된 컨텍스트를 최우선으로 사용하고, 근거가 
         reply = reply.replace("_assistant", "")
         reply = reply.replace("assistant", "")
         
-        # "현재 질문에 대한 답변을 작성해 주세요" 같은 프롬프트 텍스트 제거
+        # 프롬프트 텍스트 제거
         unwanted_patterns = [
             "현재 질문에 대한 답변을 작성해 주세요",
             "현재 질문에 대한 답변을 작성해주세요",
@@ -686,70 +770,20 @@ RAG 문서와 제공된 컨텍스트를 최우선으로 사용하고, 근거가 
             "간단한 예시",
         ]
         
-        # 메타 설명 텍스트 제거 (뒤에 붙는 불필요한 설명)
-        meta_patterns = [
-            r"제공된 정보로.*?완벽하게 답변했습니다.*?",
-            r"제공된 정보로.*?답변했습니다.*?",
-            r"이제 사용자님의 요청대로.*?제공",
-            r"이제 사용자의 요청대로.*?제공",
-            r"사용자님의 요청대로.*?설명.*?제공",
-            r"사용자의 요청대로.*?설명.*?제공",
-            r"요청대로.*?한국어로.*?제공",
-            r"요청하신.*?한국어로.*?제공",
-        ]
-        for pattern in meta_patterns:
-            reply = re.sub(pattern, "", reply, flags=re.IGNORECASE | re.DOTALL)
-        
-        # 잘못된 모델 이름 필터링 (모델 이름 질문인 경우)
-        wrong_model_names = ["니콜라스", "nicolas", "알렉스", "alex", "사라", "sara", 
-                            "gpt-4", "chatgpt", "claude", "gemini", "palm", "gpt4"]
-        
-        # 정확한 모델 이름 가져오기
-        correct_name = "로컬 LLM"
-        if self.model_path:
-            import os
-            model_file = os.path.basename(self.model_path)
-            if "lfm2" in model_file.lower():
-                correct_name = "Llama Forge Model 2 (LFM2)"
-            elif "gemma" in model_file.lower():
-                correct_name = "Gemma 3"
-        
-        # 잘못된 모델 이름이 포함된 경우 강제로 교체
-        reply_lower = reply.lower()
-        found_wrong_name = False
-        for wrong_name in wrong_model_names:
-            if wrong_name.lower() in reply_lower:
-                found_wrong_name = True
-                # 정확한 모델 이름으로 완전히 교체
-                reply = f"저는 {correct_name} 모델입니다."
-                break
-        
-        # 모델 이름 관련 키워드가 있고, 정확한 모델 이름이 없는 경우
-        model_keywords = ["모델", "model", "이름", "name", "너는", "당신은", "너의", "당신의"]
-        has_model_keyword = any(keyword in reply_lower for keyword in model_keywords)
-        has_correct_name = any(correct in reply for correct in ["Llama", "Gemma", "로컬 LLM", "LFM2"])
-        
-        if has_model_keyword and not has_correct_name:
-            # 잘못된 답변이 나온 경우 강제 교체
-            reply = f"저는 {correct_name} 모델입니다."
         for pattern in unwanted_patterns:
             reply = reply.replace(pattern, "")
-            # 대소문자 구분 없이 제거
             reply = re.sub(re.escape(pattern), "", reply, flags=re.IGNORECASE)
 
-        # assistant 접두어 정리
+        # 줄 단위 정리
         cleaned_lines = []
         for line in reply.splitlines():
             stripped = line.strip()
             lower = stripped.lower()
             
-            # 모델 이름과 구분선이 포함된 줄 제거
             if re.search(r"(llama forge model|gemma|lfm2|로컬 llm).*?===", lower) or re.search(r"^=+$", stripped):
                 stripped = ""
-            # 삼중 따옴표로 시작하거나 끝나는 줄 제거
             elif stripped.startswith("'''") or stripped.endswith("'''") or stripped.startswith('"""') or stripped.endswith('"""'):
                 stripped = ""
-            # 불필요한 패턴 제거
             elif lower.startswith("assistant:") or lower.startswith("assistant："):
                 stripped = stripped.split(":", 1)[1].strip() if ":" in stripped else ""
             elif lower == "assistant" or lower == "system" or lower == "user":
@@ -762,7 +796,6 @@ RAG 문서와 제공된 컨텍스트를 최우선으로 사용하고, 근거가 
                 stripped = ""
             elif any(pattern in stripped for pattern in unwanted_patterns):
                 stripped = ""
-            # 메타 설명 텍스트가 포함된 줄 제거
             elif re.search(r"제공된 정보로.*?답변했습니다", lower) or re.search(r"이제 사용자.*?요청대로", lower) or re.search(r"요청.*?한국어로.*?제공", lower):
                 stripped = ""
             
@@ -772,7 +805,6 @@ RAG 문서와 제공된 컨텍스트를 최우선으로 사용하고, 근거가 
         if cleaned_lines:
             reply = "\n".join(cleaned_lines)
         else:
-            # 모든 줄이 제거된 경우 원본에서 첫 번째 의미있는 줄만 사용
             lines = reply.splitlines()
             for line in lines:
                 stripped = line.strip()
@@ -780,84 +812,36 @@ RAG 문서와 제공된 컨텍스트를 최우선으로 사용하고, 근거가 
                     reply = stripped
                     break
 
-        # 응답 앞부분에서 모델 이름과 구분선 제거
-        # 예: "Llama Forge Model 2 (LFM2)\n===\n질문내용\n\n답변내용" -> "답변내용"
-        lines = reply.splitlines()
-        start_idx = 0
-        for i, line in enumerate(lines):
-            stripped = line.strip()
-            # 모델 이름이나 구분선이 있는 줄은 건너뛰기
-            if re.search(r"(llama forge model|gemma|lfm2|로컬 llm)", stripped, re.IGNORECASE) or re.match(r"^=+$", stripped):
-                start_idx = i + 1
-            # 사용자 질문처럼 보이는 줄도 건너뛰기 (질문으로 끝나는 경우)
-            elif (stripped.endswith("?") or stripped.endswith("주세요") or stripped.endswith("해주세요")) and i < len(lines) - 1:
-                start_idx = i + 1
-            else:
-                break
-        
-        if start_idx > 0:
-            reply = "\n".join(lines[start_idx:]).strip()
-        
-        # 응답 뒷부분에서 메타 설명 제거
-        lines = reply.splitlines()
-        end_idx = len(lines)
-        for i in range(len(lines) - 1, -1, -1):
-            line = lines[i].strip()
-            # 메타 설명 패턴이 있으면 그 줄부터 끝까지 제거
-            if re.search(r"제공된 정보로.*?답변했습니다", line, re.IGNORECASE) or \
-               re.search(r"이제 사용자.*?요청대로", line, re.IGNORECASE) or \
-               re.search(r"요청.*?한국어로.*?제공", line, re.IGNORECASE) or \
-               re.search(r"완벽하게 답변했습니다", line, re.IGNORECASE):
-                end_idx = i
-                break
-        
-        if end_idx < len(lines):
-            reply = "\n".join(lines[:end_idx]).strip()
-
         # 중복 응답 방지
         if "<start_of_turn>" in reply:
             reply = reply.split("<start_of_turn>")[0].strip()
-        
-        # im_end 토큰이 남아있으면 제거
         if "<|im_end|>" in reply:
             reply = reply.split("<|im_end|>")[0].strip()
         if "|im_end|>" in reply:
             reply = reply.split("|im_end|>")[0].strip()
-
-        # 과도하게 긴 응답 제한
         if "\n\n\n" in reply:
             reply = reply.split("\n\n\n")[0].strip()
         
-        # 제어 문자 및 깨지는 문자 제거 (인코딩 문제 방지)
+        return reply
+
+    def _sanitize_characters(self, reply: str) -> str:
+        """제어 문자 및 깨지는 문자 제거"""
         import string
-        # 인쇄 가능한 문자와 공백만 유지
         printable_chars = set(string.printable)
-        # 한글, 한자, 일본어 등 유니코드 문자도 허용
         cleaned_chars = []
         for char in reply:
-            # 인쇄 가능한 ASCII 문자이거나, 유니코드 문자(한글 등)인 경우만 유지
             if char in printable_chars or ord(char) > 127:
-                # 제어 문자 제거 (탭, 줄바꿈, 캐리지 리턴은 유지)
                 if ord(char) < 32 and char not in ['\n', '\r', '\t']:
                     continue
                 cleaned_chars.append(char)
         reply = ''.join(cleaned_chars)
         
-        # 앞뒤 공백 정리
-        reply = reply.strip()
-        
-        # 응답 끝에 남은 불완전한 태그나 특수 문자 제거
-        # 예: "<", "<start", "<end", "<|" 등
+        # 불완전한 태그 제거
         while reply and reply[-1] in ['<', '>', '|']:
             reply = reply[:-1].strip()
+        reply = re.sub(r'<[^>]*$', '', reply)
+        reply = re.sub(r'\|[^>]*$', '', reply)
         
-        # 불완전한 태그 패턴 제거 (끝부분에 남은 것들)
-        reply = re.sub(r'<[^>]*$', '', reply)  # 끝에 불완전한 태그 제거
-        reply = re.sub(r'\|[^>]*$', '', reply)  # 끝에 불완전한 토큰 제거
-        
-        # 다시 앞뒤 공백 정리
-        reply = reply.strip()
-
         return reply
 
     def _calculate_confidence(self, intent: str, retrieved_docs: List[str]) -> float:

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-import { User, Clock, AlertTriangle, Flame, Lock, Plus, X } from 'lucide-react';
+import { User, Clock, AlertTriangle, Flame, Lock, Plus } from 'lucide-react';
 import { UserRole } from '../App';
+import TaskFormModal from './TaskFormModal';
 
 interface Task {
   id: number;
@@ -271,15 +272,6 @@ export default function KanbanBoard({ userRole }: { userRole: UserRole }) {
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [showEditTaskModal, setShowEditTaskModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [newTask, setNewTask] = useState({
-    title: '',
-    assignee: '',
-    priority: 'medium' as 'high' | 'medium' | 'low',
-    storyPoints: 5,
-    dueDate: '',
-    labels: '',
-    isFirefighting: false,
-  });
 
   const canEdit = ['pm', 'developer', 'qa'].includes(userRole);
   const isReadOnly = ['auditor', 'sponsor'].includes(userRole);
@@ -320,23 +312,7 @@ export default function KanbanBoard({ userRole }: { userRole: UserRole }) {
     });
   };
 
-  const handleAddTask = () => {
-    if (!newTask.title || !newTask.assignee || !newTask.dueDate) {
-      alert('모든 필수 항목을 입력해주세요.');
-      return;
-    }
-
-    const task: Task = {
-      id: Date.now(),
-      title: newTask.title,
-      assignee: newTask.assignee,
-      priority: newTask.priority,
-      storyPoints: newTask.storyPoints,
-      dueDate: newTask.dueDate,
-      labels: newTask.labels.split(',').map((l) => l.trim()).filter(Boolean),
-      isFirefighting: newTask.isFirefighting,
-    };
-
+  const handleAddTask = (task: Task) => {
     setColumns((prev) =>
       prev.map((col) => {
         if (col.id === 'backlog') {
@@ -345,17 +321,7 @@ export default function KanbanBoard({ userRole }: { userRole: UserRole }) {
         return col;
       })
     );
-
     setShowAddTaskModal(false);
-    setNewTask({
-      title: '',
-      assignee: '',
-      priority: 'medium',
-      storyPoints: 5,
-      dueDate: '',
-      labels: '',
-      isFirefighting: false,
-    });
   };
 
   const handleEditTask = (task: Task) => {
@@ -363,16 +329,13 @@ export default function KanbanBoard({ userRole }: { userRole: UserRole }) {
     setShowEditTaskModal(true);
   };
 
-  const handleUpdateTask = () => {
-    if (!editingTask) return;
-
+  const handleUpdateTask = (task: Task) => {
     setColumns((prev) =>
       prev.map((col) => ({
         ...col,
-        tasks: col.tasks.map((t) => (t.id === editingTask.id ? editingTask : t)),
+        tasks: col.tasks.map((t) => (t.id === task.id ? task : t)),
       }))
     );
-
     setShowEditTaskModal(false);
     setEditingTask(null);
   };
@@ -470,246 +433,25 @@ export default function KanbanBoard({ userRole }: { userRole: UserRole }) {
       </div>
 
       {/* Add Task Modal */}
-      {showAddTaskModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">새 작업 추가</h3>
-              <button
-                onClick={() => setShowAddTaskModal(false)}
-                className="p-1 hover:bg-gray-100 rounded transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">작업 제목 *</label>
-                <input
-                  type="text"
-                  value={newTask.title}
-                  onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="작업 제목을 입력하세요"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">담당자 *</label>
-                  <input
-                    type="text"
-                    value={newTask.assignee}
-                    onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="이름"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">마감일 *</label>
-                  <input
-                    type="date"
-                    value={newTask.dueDate}
-                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">우선순위</label>
-                  <select
-                    value={newTask.priority}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, priority: e.target.value as 'high' | 'medium' | 'low' })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="low">낮음</option>
-                    <option value="medium">보통</option>
-                    <option value="high">높음</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Story Points</label>
-                  <input
-                    type="number"
-                    value={newTask.storyPoints}
-                    onChange={(e) => setNewTask({ ...newTask, storyPoints: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    min="1"
-                    max="21"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">레이블</label>
-                <input
-                  type="text"
-                  value={newTask.labels}
-                  onChange={(e) => setNewTask({ ...newTask, labels: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="쉼표로 구분 (예: AI모델링, OCR)"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={newTask.isFirefighting}
-                  onChange={(e) => setNewTask({ ...newTask, isFirefighting: e.target.checked })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label className="block text-sm font-medium text-gray-700">긴급 처리</label>
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={handleAddTask}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                추가
-              </button>
-              <button
-                onClick={() => setShowAddTaskModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <TaskFormModal
+        isOpen={showAddTaskModal}
+        onClose={() => setShowAddTaskModal(false)}
+        onSubmit={handleAddTask}
+        isEditMode={false}
+      />
 
       {/* Edit Task Modal */}
-      {showEditTaskModal && editingTask && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">작업 수정</h3>
-              <button
-                onClick={() => setShowEditTaskModal(false)}
-                className="p-1 hover:bg-gray-100 rounded transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">작업 제목 *</label>
-                <input
-                  type="text"
-                  value={editingTask.title}
-                  onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="작업 제목을 입력하세요"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">담당자 *</label>
-                  <input
-                    type="text"
-                    value={editingTask.assignee}
-                    onChange={(e) => setEditingTask({ ...editingTask, assignee: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="이름"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">마감일 *</label>
-                  <input
-                    type="date"
-                    value={editingTask.dueDate}
-                    onChange={(e) => setEditingTask({ ...editingTask, dueDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">우선순위</label>
-                  <select
-                    value={editingTask.priority}
-                    onChange={(e) =>
-                      setEditingTask({ ...editingTask, priority: e.target.value as 'high' | 'medium' | 'low' })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="low">낮음</option>
-                    <option value="medium">보통</option>
-                    <option value="high">높음</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Story Points</label>
-                  <input
-                    type="number"
-                    value={editingTask.storyPoints}
-                    onChange={(e) => setEditingTask({ ...editingTask, storyPoints: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    min="1"
-                    max="21"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">레이블</label>
-                <input
-                  type="text"
-                  value={editingTask.labels.join(', ')}
-                  onChange={(e) => setEditingTask({ ...editingTask, labels: e.target.value.split(',').map((l) => l.trim()).filter(Boolean) })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="쉼표로 구분 (예: AI모델링, OCR)"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={editingTask.isFirefighting}
-                  onChange={(e) => setEditingTask({ ...editingTask, isFirefighting: e.target.checked })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label className="block text-sm font-medium text-gray-700">긴급 처리</label>
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={handleUpdateTask}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                수정
-              </button>
-              <button
-                onClick={handleDeleteTask}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                삭제
-              </button>
-              <button
-                onClick={() => setShowEditTaskModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <TaskFormModal
+        isOpen={showEditTaskModal}
+        onClose={() => {
+          setShowEditTaskModal(false);
+          setEditingTask(null);
+        }}
+        task={editingTask}
+        onSubmit={handleUpdateTask}
+        onDelete={handleDeleteTask}
+        isEditMode={true}
+      />
     </div>
   );
 }

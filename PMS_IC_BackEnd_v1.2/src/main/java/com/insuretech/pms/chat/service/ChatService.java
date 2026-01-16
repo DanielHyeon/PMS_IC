@@ -32,69 +32,77 @@ public class ChatService {
 
     @Transactional
     public ChatResponse sendMessage(ChatRequest request) {
-        // 인증된 사용자가 있으면 가져오고, 없으면 guest로 처리
-        User currentUser;
-        String userId;
-        try {
-            currentUser = authService.getCurrentUser();
-            userId = currentUser.getId();
-        } catch (Exception e) {
-            // 인증되지 않은 사용자는 guest로 처리
-            currentUser = null;
-            userId = "guest";
-            log.info("Processing chat request for unauthenticated user (guest)");
-        }
+        User user = resolveCurrentUser();
+        String userId = user != null ? user.getId() : "guest";
+        
+        ChatSession session = getOrCreateSession(request.getSessionId(), userId);
+        ChatMessage userMessage = saveUserMessage(session, request.getMessage());
 
-        // 세션 조회 또는 생성
-        ChatSession session;
-        if (request.getSessionId() != null) {
-            session = chatSessionRepository.findById(request.getSessionId())
-                    .orElseThrow(() -> CustomException.notFound("채팅 세션을 찾을 수 없습니다"));
-        } else {
-            session = ChatSession.builder()
-                    .userId(userId)
-                    .title("New Chat")
-                    .active(true)
-                    .build();
-            session = chatSessionRepository.save(session);
-        }
-
-        // 사용자 메시지 저장
-        ChatMessage userMessage = ChatMessage.builder()
-                .session(session)
-                .role(ChatMessage.Role.USER)
-                .content(request.getMessage())
-                .build();
-        chatMessageRepository.save(userMessage);
-
-        // Redis에서 최근 대화 조회
-        String redisKey = "chat:session:" + session.getId();
         List<ChatMessage> recentMessages = getRecentMessages(session.getId(), 10);
+        ChatResponse aiResponse = callAIService(userId, request.getMessage(), recentMessages);
 
-        // AI 서비스 호출
-        ChatResponse aiResponse = aiChatClient.chat(userId, request.getMessage(), recentMessages);
-
-        // AI 응답 저장
-        ChatMessage assistantMessage = ChatMessage.builder()
-                .session(session)
-                .role(ChatMessage.Role.ASSISTANT)
-                .content(aiResponse.getReply())
-                .build();
-        chatMessageRepository.save(assistantMessage);
-
-        // Redis에 캐싱 (1시간)
-        cacheMessage(redisKey, userMessage);
-        cacheMessage(redisKey, assistantMessage);
+        ChatMessage assistantMessage = saveAssistantMessage(session, aiResponse.getReply());
+        cacheMessages(session.getId(), userMessage, assistantMessage);
 
         aiResponse.setSessionId(session.getId());
         return aiResponse;
     }
 
+    private User resolveCurrentUser() {
+        try {
+            return authService.getCurrentUser();
+        } catch (Exception e) {
+            log.info("Processing chat request for unauthenticated user (guest)");
+            return null;
+        }
+    }
+
+    private ChatSession getOrCreateSession(String sessionId, String userId) {
+        if (sessionId != null) {
+            return chatSessionRepository.findById(sessionId)
+                    .orElseThrow(() -> CustomException.notFound("채팅 세션을 찾을 수 없습니다"));
+        }
+        
+        ChatSession newSession = ChatSession.builder()
+                .userId(userId)
+                .title("New Chat")
+                .active(true)
+                .build();
+        return chatSessionRepository.save(newSession);
+    }
+
+    private ChatMessage saveUserMessage(ChatSession session, String message) {
+        ChatMessage userMessage = ChatMessage.builder()
+                .session(session)
+                .role(ChatMessage.Role.USER)
+                .content(message)
+                .build();
+        return chatMessageRepository.save(userMessage);
+    }
+
+    private ChatResponse callAIService(String userId, String message, List<ChatMessage> recentMessages) {
+        return aiChatClient.chat(userId, message, recentMessages);
+    }
+
+    private ChatMessage saveAssistantMessage(ChatSession session, String reply) {
+        ChatMessage assistantMessage = ChatMessage.builder()
+                .session(session)
+                .role(ChatMessage.Role.ASSISTANT)
+                .content(reply)
+                .build();
+        return chatMessageRepository.save(assistantMessage);
+    }
+
+    private void cacheMessages(String sessionId, ChatMessage userMessage, ChatMessage assistantMessage) {
+        String redisKey = "chat:session:" + sessionId;
+        cacheMessage(redisKey, userMessage);
+        cacheMessage(redisKey, assistantMessage);
+    }
+
     private List<ChatMessage> getRecentMessages(String sessionId, int limit) {
-        return chatMessageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId)
-                .stream()
-                .skip(Math.max(0, chatMessageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId).size() - limit))
-                .collect(Collectors.toList());
+        List<ChatMessage> allMessages = chatMessageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId);
+        int startIndex = Math.max(0, allMessages.size() - limit);
+        return allMessages.subList(startIndex, allMessages.size());
     }
 
     private void cacheMessage(String redisKey, ChatMessage message) {

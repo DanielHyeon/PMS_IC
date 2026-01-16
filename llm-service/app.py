@@ -471,56 +471,120 @@ def get_current_model():
         logger.error(f"Error getting current model: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
+def _validate_model_change_request(data):
+    """모델 변경 요청 검증"""
+    if not data:
+        logger.error("Request body is empty or invalid")
+        raise ValueError("요청 데이터가 없거나 잘못되었습니다.")
+    
+    new_model_path = data.get("modelPath", "")
+    if not new_model_path:
+        logger.error("modelPath is missing in request")
+        raise ValueError("모델 경로가 필요합니다.")
+    
+    return new_model_path
+
+def _verify_model_file_exists(new_model_path):
+    """모델 파일 존재 확인"""
+    logger.info(f"Checking if model file exists: {new_model_path}")
+    if not os.path.exists(new_model_path):
+        logger.error(f"Model file not found: {new_model_path}")
+        model_dir = os.path.dirname(new_model_path) if os.path.dirname(new_model_path) else "./models"
+        logger.info(f"Model directory: {model_dir}, exists: {os.path.exists(model_dir)}")
+        if os.path.exists(model_dir):
+            try:
+                files = os.listdir(model_dir)
+                logger.info(f"Files in model directory: {files[:10]}")
+            except Exception as e:
+                logger.error(f"Failed to list directory: {e}")
+        raise FileNotFoundError(f"모델 파일을 찾을 수 없습니다: {new_model_path}")
+
+def _load_new_model(new_model_path):
+    """새 모델 로드"""
+    logger.info(f"Loading new model: {new_model_path}")
+    if os.path.exists(new_model_path):
+        file_size = os.path.getsize(new_model_path)
+        logger.info(f"Model file size: {file_size / (1024*1024*1024):.2f} GB")
+    
+    try:
+        new_llm = Llama(
+            model_path=new_model_path,
+            n_ctx=4096,
+            n_threads=6,
+            verbose=True,
+            n_gpu_layers=0
+        )
+        logger.info(f"New model loaded successfully: {new_model_path}")
+        return new_llm
+    except Exception as llama_error:
+        logger.error(f"Llama model initialization failed: {llama_error}", exc_info=True)
+        raise RuntimeError(f"모델 초기화 실패: {str(llama_error)}") from llama_error
+
+def _update_global_state(new_llm, new_model_path, old_llm):
+    """전역 상태 업데이트"""
+    global llm, current_model_path, chat_workflow
+    
+    if old_llm is not None:
+        try:
+            logger.info("Unloading previous model...")
+            del old_llm
+        except Exception as del_error:
+            logger.warning(f"Error deleting old model: {del_error}")
+    
+    llm = new_llm
+    current_model_path = new_model_path
+    chat_workflow = None
+
+def _ensure_rag_service():
+    """RAG 서비스 확인 및 초기화"""
+    global rag_service
+    if rag_service is None:
+        try:
+            logger.info("Loading RAG service with Neo4j...")
+            from rag_service_neo4j import RAGServiceNeo4j
+            rag_service = RAGServiceNeo4j()
+            logger.info("RAG service with Neo4j loaded successfully")
+        except Exception as e:
+            logger.error(f"Failed to load RAG service: {e}", exc_info=True)
+            rag_service = None
+
+def _reinitialize_workflow():
+    """워크플로우 재초기화"""
+    global llm, rag_service, chat_workflow, current_model_path
+    try:
+        logger.info("Initializing LangGraph chat workflow with new model...")
+        chat_workflow = ChatWorkflow(llm, rag_service, model_path=current_model_path)
+        logger.info("Chat workflow initialized successfully")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to initialize chat workflow: {e}", exc_info=True)
+        chat_workflow = None
+        return False
+
+def _restore_previous_model(old_llm, old_workflow, old_model_path):
+    """이전 모델 복구"""
+    global llm, chat_workflow, current_model_path
+    if old_llm is not None:
+        logger.info("Restoring previous model...")
+        llm = old_llm
+        chat_workflow = old_workflow
+        current_model_path = old_model_path
+        logger.info("Previous model restored successfully")
+    else:
+        llm = None
+        chat_workflow = None
+
 @app.route("/api/model/change", methods=["PUT"])
 def change_model():
     """모델 변경 API"""
     global llm, chat_workflow, current_model_path, rag_service
 
     try:
-        # 요청 데이터 로깅
         logger.info(f"Received model change request: {request.json}")
         
-        data = request.json
-        if not data:
-            logger.error("Request body is empty or invalid")
-            return jsonify({
-                "status": "error",
-                "error": "Invalid request body",
-                "message": "요청 데이터가 없거나 잘못되었습니다."
-            }), 400
+        new_model_path = _validate_model_change_request(request.json)
+        _verify_model_file_exists(new_model_path)
         
-        new_model_path = data.get("modelPath", "")
-        logger.info(f"Requested model path: {new_model_path}")
-
-        if not new_model_path:
-            logger.error("modelPath is missing in request")
-            return jsonify({
-                "status": "error",
-                "error": "modelPath is required",
-                "message": "모델 경로가 필요합니다."
-            }), 400
-
-        # 모델 파일 존재 확인
-        logger.info(f"Checking if model file exists: {new_model_path}")
-        if not os.path.exists(new_model_path):
-            logger.error(f"Model file not found: {new_model_path}")
-            # 현재 디렉토리와 파일 목록 로깅
-            model_dir = os.path.dirname(new_model_path) if os.path.dirname(new_model_path) else "./models"
-            logger.info(f"Model directory: {model_dir}, exists: {os.path.exists(model_dir)}")
-            if os.path.exists(model_dir):
-                try:
-                    files = os.listdir(model_dir)
-                    logger.info(f"Files in model directory: {files[:10]}")  # 처음 10개만
-                except Exception as e:
-                    logger.error(f"Failed to list directory: {e}")
-            
-            return jsonify({
-                "status": "error",
-                "error": f"Model file not found: {new_model_path}",
-                "message": f"모델 파일을 찾을 수 없습니다: {new_model_path}",
-                "error_type": "FILE_NOT_FOUND"
-            }), 404
-
         logger.info(f"Changing model from {current_model_path} to {new_model_path}")
 
         # 기존 모델 및 워크플로우 백업 (복구용)
@@ -528,62 +592,12 @@ def change_model():
         old_workflow = chat_workflow
         old_model_path = current_model_path
         
-        # 새 모델을 먼저 로드 시도 (기존 모델은 유지)
         new_llm = None
         try:
-            logger.info(f"Loading new model: {new_model_path}")
-            logger.info(f"Model file exists: {os.path.exists(new_model_path)}")
-            if os.path.exists(new_model_path):
-                file_size = os.path.getsize(new_model_path)
-                logger.info(f"Model file size: {file_size / (1024*1024*1024):.2f} GB")
-            
-            # 새 모델 직접 로드 (전역 변수 변경 없이)
-            try:
-                new_llm = Llama(
-                    model_path=new_model_path,
-                    n_ctx=4096,
-                    n_threads=6,
-                    verbose=True,
-                    n_gpu_layers=0
-                )
-                logger.info(f"New model loaded successfully: {new_model_path}")
-            except Exception as llama_error:
-                logger.error(f"Llama model initialization failed: {llama_error}", exc_info=True)
-                raise RuntimeError(f"모델 초기화 실패: {str(llama_error)}") from llama_error
-            
-            # 새 모델 로드 성공 후에만 기존 모델 해제 및 전역 변수 업데이트
-            if old_llm is not None:
-                try:
-                    logger.info("Unloading previous model...")
-                    del old_llm
-                except Exception as del_error:
-                    logger.warning(f"Error deleting old model: {del_error}")
-            
-            # 전역 변수 업데이트
-            llm = new_llm
-            current_model_path = new_model_path
-            chat_workflow = None  # 워크플로우 재초기화 필요
-            
-            # RAG 서비스 확인
-            if rag_service is None:
-                try:
-                    logger.info("Loading RAG service with Qdrant...")
-                    rag_service = RAGServiceQdrant()
-                    logger.info("RAG service with Qdrant loaded successfully")
-                except Exception as e:
-                    logger.error(f"Failed to load RAG service: {e}", exc_info=True)
-                    rag_service = None
-            
-            # 워크플로우 재초기화
-            try:
-                logger.info("Initializing LangGraph chat workflow with new model...")
-                chat_workflow = ChatWorkflow(llm, rag_service, model_path=current_model_path)
-                logger.info("Chat workflow initialized successfully")
-                workflow_initialized = True
-            except Exception as e:
-                logger.error(f"Failed to initialize chat workflow: {e}", exc_info=True)
-                chat_workflow = None
-                workflow_initialized = False
+            new_llm = _load_new_model(new_model_path)
+            _update_global_state(new_llm, new_model_path, old_llm)
+            _ensure_rag_service()
+            workflow_initialized = _reinitialize_workflow()
             
             logger.info(f"Model successfully changed to {new_model_path}")
             
@@ -595,34 +609,29 @@ def change_model():
             })
             
         except Exception as load_error:
-            # 모델 로드 실패 시 새 모델 정리
             if new_llm is not None:
                 try:
                     del new_llm
                 except Exception:
                     pass
             
-            # 이전 모델이 있었다면 복구
-            if old_llm is not None:
-                logger.info("Restoring previous model...")
-                llm = old_llm
-                chat_workflow = old_workflow
-                current_model_path = old_model_path
-                logger.info("Previous model restored successfully")
-            else:
-                # 이전 모델이 없었으면 None으로 설정
-                llm = None
-                chat_workflow = None
-            
+            _restore_previous_model(old_llm, old_workflow, old_model_path)
             logger.error(f"Failed to load new model: {load_error}", exc_info=True)
             raise load_error
 
+    except ValueError as e:
+        logger.error(f"Invalid request: {e}")
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "message": str(e)
+        }), 400
     except FileNotFoundError as e:
         logger.error(f"Model file not found: {e}", exc_info=True)
         return jsonify({
             "status": "error",
             "error": str(e),
-            "message": f"모델 파일을 찾을 수 없습니다: {str(e)}",
+            "message": str(e),
             "error_type": "FILE_NOT_FOUND"
         }), 404
     except RuntimeError as e:
@@ -630,7 +639,7 @@ def change_model():
         return jsonify({
             "status": "error",
             "error": str(e),
-            "message": f"모델 로드 실패: {str(e)}",
+            "message": str(e),
             "error_type": "LOAD_ERROR"
         }), 500
     except Exception as e:

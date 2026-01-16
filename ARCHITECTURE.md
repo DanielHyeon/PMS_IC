@@ -1,210 +1,215 @@
-# PMS Insurance Claims - 상세 아키텍처 문서
+# PMS Insurance Claims - 시스템 아키텍처 문서
 
-## 📑 목차
-
-1. [시스템 개요](#시스템-개요)
-2. [전체 아키텍처](#전체-아키텍처)
-3. [컴포넌트 상세](#컴포넌트-상세)
-4. [데이터 모델](#데이터-모델)
-5. [API 설계](#api-설계)
-6. [보안 아키텍처](#보안-아키텍처)
-7. [배포 아키텍처](#배포-아키텍처)
-8. [성능 최적화](#성능-최적화)
+> **버전**: 2.0  
+> **최종 업데이트**: 2026-01-16  
+> **작성자**: PMS Insurance Claims Team
 
 ---
 
-## 시스템 개요
+## 목차
 
-### 시스템 목적
-
-PMS Insurance Claims는 보험 심사 프로젝트의 전주기 관리를 위한 AI 통합 플랫폼입니다. Neo4j GraphRAG 기반의 지능형 챗봇을 통해 프로젝트 관리 의사결정을 지원합니다.
-
-### 핵심 설계 원칙
-
-- **마이크로서비스 지향**: 각 서비스는 독립적으로 배포 및 확장 가능
-- **AI 우선**: LLM과 RAG를 핵심 기능으로 통합
-- **보안 강화**: JWT 기반 인증, 환경변수 기반 시크릿 관리
-- **확장성**: 컨테이너 기반 수평 확장 지원
-- **관찰성**: 구조화된 로깅, 헬스체크, 메트릭 수집
-
-### 기술 결정 사항
-
-| 항목 | 선택 | 이유 |
-|------|------|------|
-| Backend | Spring Boot | 엔터프라이즈급 안정성, 풍부한 생태계 |
-| Frontend | React | 컴포넌트 기반, 대규모 커뮤니티 |
-| LLM | Gemma 3 12B | 로컬 배포 가능, 한국어 지원 우수 |
-| RAG | Neo4j GraphRAG | 벡터 + 그래프 하이브리드 검색 |
-| Database | PostgreSQL | ACID 보장, JSON 지원 |
-| Cache | Redis | 고성능, 세션 관리 지원 |
+1. [시스템 개요](#1-시스템-개요)
+2. [전체 아키텍처](#2-전체-아키텍처)
+3. [백엔드 (Spring Boot)](#3-백엔드-spring-boot)
+4. [프론트엔드 (React)](#4-프론트엔드-react)
+5. [LLM 서비스 (Flask + LangGraph)](#5-llm-서비스-flask--langgraph)
+6. [데이터베이스 스키마](#6-데이터베이스-스키마)
+7. [API 설계](#7-api-설계)
+8. [보안 아키텍처](#8-보안-아키텍처)
+9. [배포 및 인프라](#9-배포-및-인프라)
 
 ---
 
-## 전체 아키텍처
+## 1. 시스템 개요
 
-### 논리적 아키텍처
+### 1.1 시스템 목적
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Presentation Layer                    │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
-│  │   Web UI    │  │   Mobile    │  │   API CLI   │     │
-│  │  (React)    │  │ (Future)    │  │  (Future)   │     │
-│  └─────────────┘  └─────────────┘  └─────────────┘     │
-└────────────────────┬────────────────────────────────────┘
-                     │ HTTP/REST
-┌────────────────────▼────────────────────────────────────┐
-│                  Application Layer                       │
-│  ┌─────────────────────────────────────────────────┐    │
-│  │          Spring Boot Backend                    │    │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐     │    │
-│  │  │ Project  │  │   Risk   │  │   Chat   │     │    │
-│  │  │ Service  │  │ Service  │  │ Service  │     │    │
-│  │  └──────────┘  └──────────┘  └──────────┘     │    │
-│  └─────────────────────────────────────────────────┘    │
-└────────────────────┬────────────────────────────────────┘
-                     │
-        ┌────────────┼────────────┐
-        │            │            │
-┌───────▼─────┐ ┌───▼────┐ ┌─────▼──────┐
-│ Data Layer  │ │ Cache  │ │ AI Service │
-│             │ │ Layer  │ │            │
-│ ┌─────────┐ │ │        │ │ ┌────────┐ │
-│ │Postgres │ │ │ Redis  │ │ │ LLM    │ │
-│ └─────────┘ │ │        │ │ │ +RAG   │ │
-│             │ └────────┘ │ └────────┘ │
-│ ┌─────────┐ │            │ ┌────────┐ │
-│ │ Neo4j   │ │            │ │ GPU    │ │
-│ └─────────┘ │            │ └────────┘ │
-└─────────────┘            └────────────┘
-```
+PMS Insurance Claims는 **보험 심사 프로젝트의 전주기 관리**를 위한 AI 통합 플랫폼입니다.  
+Neo4j GraphRAG 기반의 지능형 챗봇을 통해 프로젝트 관리 의사결정을 지원합니다.
 
-### 물리적 아키텍처 (Docker Compose)
+### 1.2 핵심 기능
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Docker Host                           │
-│                                                          │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │           Docker Network: pms-network            │  │
-│  │                                                   │  │
-│  │  ┌────────────┐  ┌────────────┐  ┌───────────┐  │  │
-│  │  │  frontend  │  │  backend   │  │llm-service│  │  │
-│  │  │  :5173     │  │  :8080     │  │  :8000    │  │  │
-│  │  └─────┬──────┘  └─────┬──────┘  └─────┬─────┘  │  │
-│  │        │                │                │        │  │
-│  │  ┌─────▼──────┐  ┌─────▼──────┐  ┌─────▼─────┐  │  │
-│  │  │  postgres  │  │   redis    │  │   neo4j   │  │  │
-│  │  │   :5433    │  │   :6379    │  │   :7687   │  │  │
-│  │  └────────────┘  └────────────┘  └───────────┘  │  │
-│  │                                                   │  │
-│  └──────────────────────────────────────────────────┘  │
-│                                                          │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │           Docker Volumes (Persistent)            │  │
-│  │  • postgres_data                                 │  │
-│  │  • redis_data                                    │  │
-│  │  • neo4j_data                                    │  │
-│  │  • models (host mount)                           │  │
-│  └──────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-```
+| 기능 영역 | 설명 |
+|-----------|------|
+| **프로젝트 관리** | 프로젝트 생성, 페이즈 관리, 진척률 추적 |
+| **태스크 관리** | 칸반 보드, 백로그 관리, 스프린트 계획 |
+| **이슈/리스크 관리** | 이슈 등록, 리스크 평가, 해결 추적 |
+| **산출물 관리** | 문서 업로드, 승인 워크플로우, 버전 관리 |
+| **AI 어시스턴트** | RAG 기반 질의응답, 프로젝트 현황 분석 |
+| **교육 관리** | 교육 프로그램, 세션 관리, 이수 이력 |
+| **권한 관리** | 역할 기반 접근 제어 (RBAC) |
+
+### 1.3 기술 스택 요약
+
+| 레이어 | 기술 | 버전 |
+|--------|------|------|
+| Frontend | React + TypeScript + Vite | React 18, Vite 5 |
+| Backend | Spring Boot + JPA | Spring Boot 3.2 |
+| LLM Service | Flask + LangGraph | Python 3.11 |
+| Database | PostgreSQL | 15 |
+| Graph DB | Neo4j | 5.20 |
+| Cache | Redis | 7 |
+| Container | Docker Compose | - |
 
 ---
 
-## 컴포넌트 상세
+## 2. 전체 아키텍처
 
-### 1. Frontend (React SPA)
-
-**책임**: 사용자 인터페이스, 클라이언트 상태 관리
-
-**주요 구성요소**:
+### 2.1 시스템 구성도
 
 ```
-src/
-├── components/          # 재사용 가능한 UI 컴포넌트
-│   ├── common/         # 공통 컴포넌트 (Button, Input, Modal)
-│   ├── project/        # 프로젝트 관련 컴포넌트
-│   ├── risk/           # 리스크 관련 컴포넌트
-│   └── chat/           # 챗봇 UI 컴포넌트
-├── pages/              # 페이지 컴포넌트
-│   ├── Dashboard.jsx
-│   ├── ProjectList.jsx
-│   └── ChatPage.jsx
-├── services/           # API 통신 레이어
-│   ├── api.js         # Axios 인스턴스
-│   ├── projectService.js
-│   └── chatService.js
-├── contexts/           # React Context (전역 상태)
-│   ├── AuthContext.jsx
-│   └── ThemeContext.jsx
-└── utils/              # 유틸리티 함수
-    ├── dateFormatter.js
-    └── validators.js
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Client Layer                                 │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │                    React SPA (Vite)                          │   │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐       │   │
+│  │  │Dashboard │ │ Kanban   │ │ AI Chat  │ │ Settings │       │   │
+│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘       │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└────────────────────────────┬────────────────────────────────────────┘
+                             │ HTTP/REST (Port 5173)
+┌────────────────────────────▼────────────────────────────────────────┐
+│                      Application Layer                               │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │              Spring Boot Backend (Port 8083)                 │   │
+│  │  ┌────────────────────────────────────────────────────────┐ │   │
+│  │  │                    REST Controllers                     │ │   │
+│  │  │  Auth │ Project │ Task │ Chat │ Issue │ Education      │ │   │
+│  │  └────────────────────────────────────────────────────────┘ │   │
+│  │  ┌────────────────────────────────────────────────────────┐ │   │
+│  │  │                    Service Layer                        │ │   │
+│  │  │  AuthService │ ProjectService │ ChatService │ ...      │ │   │
+│  │  └────────────────────────────────────────────────────────┘ │   │
+│  │  ┌────────────────────────────────────────────────────────┐ │   │
+│  │  │                  Repository Layer (JPA)                 │ │   │
+│  │  └────────────────────────────────────────────────────────┘ │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└───────┬──────────────────────┬──────────────────────┬───────────────┘
+        │                      │                      │
+┌───────▼───────┐      ┌───────▼───────┐      ┌───────▼───────┐
+│  PostgreSQL   │      │     Redis     │      │  LLM Service  │
+│  (Port 5433)  │      │  (Port 6379)  │      │  (Port 8000)  │
+│               │      │               │      │               │
+│ ┌───────────┐ │      │ • Session     │      │ ┌───────────┐ │
+│ │ auth      │ │      │ • Cache       │      │ │  Flask    │ │
+│ │ project   │ │      │ • Rate Limit  │      │ │ LangGraph │ │
+│ │ task      │ │      └───────────────┘      │ │ llama-cpp │ │
+│ │ chat      │ │                             │ └─────┬─────┘ │
+│ │ report    │ │                             └───────┼───────┘
+│ └───────────┘ │                                     │
+└───────────────┘                             ┌───────▼───────┐
+                                              │    Neo4j      │
+                                              │  (Port 7687)  │
+                                              │               │
+                                              │ • Vector Index│
+                                              │ • Graph Store │
+                                              │ • RAG Chunks  │
+                                              └───────────────┘
 ```
 
-**통신 패턴**:
-- REST API: Axios를 통한 HTTP 통신
-- WebSocket: 실시간 채팅 (향후 구현)
-- 인증: JWT 토큰을 Authorization 헤더에 포함
+### 2.2 서비스 간 통신
 
-### 2. Backend (Spring Boot)
+| Source | Target | Protocol | 용도 |
+|--------|--------|----------|------|
+| Frontend | Backend | REST/HTTP | API 호출 |
+| Backend | LLM Service | REST/HTTP | AI 채팅 요청 |
+| Backend | PostgreSQL | JDBC | 데이터 영속화 |
+| Backend | Redis | Redis Protocol | 세션/캐시 |
+| LLM Service | Neo4j | Bolt | RAG 검색 |
 
-**책임**: 비즈니스 로직, 데이터 접근, API 제공
+---
 
-**레이어 아키텍처**:
+## 3. 백엔드 (Spring Boot)
+
+### 3.1 모듈 구조
 
 ```
 com.insuretech.pms/
-├── auth/                      # 인증/인가 모듈
+├── PmsApplication.java          # 메인 애플리케이션
+├── auth/                        # 인증/인가 모듈
 │   ├── controller/
-│   │   └── AuthController.java
+│   │   ├── AuthController.java
+│   │   ├── UserController.java
+│   │   └── PermissionController.java
 │   ├── service/
-│   │   └── AuthService.java
-│   ├── security/
+│   │   ├── AuthService.java
 │   │   ├── JwtTokenProvider.java
-│   │   └── JwtAuthenticationFilter.java
-│   └── dto/
-│       ├── LoginRequest.java
-│       └── TokenResponse.java
-│
-├── project/                   # 프로젝트 관리 모듈
-│   ├── controller/
-│   │   └── ProjectController.java
-│   ├── service/
-│   │   └── ProjectService.java
+│   │   └── UserService.java
+│   ├── entity/
+│   │   ├── User.java
+│   │   ├── Permission.java
+│   │   └── RolePermission.java
 │   ├── repository/
-│   │   └── ProjectRepository.java
-│   ├── domain/
+│   └── dto/
+│
+├── project/                     # 프로젝트 관리 모듈
+│   ├── controller/
+│   │   ├── ProjectController.java
+│   │   ├── PhaseController.java
+│   │   ├── DeliverableController.java
+│   │   ├── IssueController.java
+│   │   ├── MeetingController.java
+│   │   └── KpiController.java
+│   ├── service/
+│   ├── entity/
 │   │   ├── Project.java
-│   │   └── Task.java
+│   │   ├── Phase.java
+│   │   ├── Deliverable.java
+│   │   ├── Issue.java
+│   │   ├── Meeting.java
+│   │   └── Kpi.java
+│   └── repository/
+│
+├── task/                        # 태스크 관리 모듈
+│   ├── controller/
+│   │   ├── TaskController.java
+│   │   └── UserStoryController.java
+│   ├── service/
+│   │   ├── TaskService.java
+│   │   ├── UserStoryService.java
+│   │   └── KanbanBoardService.java
+│   ├── entity/
+│   │   ├── Task.java
+│   │   ├── UserStory.java
+│   │   ├── KanbanColumn.java
+│   │   └── Sprint.java
+│   └── repository/
+│
+├── chat/                        # AI 챗봇 모듈
+│   ├── controller/
+│   │   ├── ChatController.java
+│   │   └── LlmController.java
+│   ├── service/
+│   │   ├── ChatService.java
+│   │   ├── AIChatClient.java
+│   │   └── ProjectDataService.java
+│   ├── entity/
+│   │   ├── ChatSession.java
+│   │   └── ChatMessage.java
+│   └── repository/
+│
+├── education/                   # 교육 관리 모듈
+│   ├── controller/
+│   ├── service/
+│   ├── entity/
+│   └── repository/
+│
+├── report/                      # 리포트/대시보드 모듈
+│   ├── controller/
+│   │   └── DashboardController.java
+│   ├── service/
+│   │   └── DashboardService.java
 │   └── dto/
-│       ├── ProjectRequest.java
-│       └── ProjectResponse.java
+│       └── DashboardStats.java
 │
-├── risk/                      # 리스크 관리 모듈
-│   ├── controller/
-│   ├── service/
-│   ├── repository/
-│   └── domain/
-│
-├── chat/                      # AI 챗봇 모듈
-│   ├── controller/
-│   │   └── ChatController.java
-│   ├── service/
-│   │   ├── AIChatClient.java  # LLM Service 통신
-│   │   └── ChatSessionService.java
-│   ├── repository/
-│   │   └── ChatMessageRepository.java
-│   └── domain/
-│       ├── ChatSession.java
-│       └── ChatMessage.java
-│
-└── common/                    # 공통 모듈
+└── common/                      # 공통 모듈
     ├── config/
     │   ├── SecurityConfig.java
+    │   ├── CorsConfig.java
     │   ├── RedisConfig.java
     │   └── WebClientConfig.java
+    ├── entity/
+    │   └── BaseEntity.java
     ├── exception/
     │   ├── GlobalExceptionHandler.java
     │   └── CustomException.java
@@ -212,224 +217,592 @@ com.insuretech.pms/
         └── ApiResponse.java
 ```
 
-**핵심 설계 패턴**:
+### 3.2 주요 엔티티
 
-1. **Layered Architecture**: Controller → Service → Repository
-2. **Dependency Injection**: Spring IoC 컨테이너 활용
-3. **DTO Pattern**: 계층 간 데이터 전송 객체 사용
-4. **Repository Pattern**: JPA 기반 데이터 접근 추상화
+#### User (사용자)
 
-**주요 설정**:
+```java
+@Entity
+@Table(name = "users", schema = "auth")
+public class User extends BaseEntity {
+    @Id
+    private String id;
+    
+    @Column(unique = true, nullable = false)
+    private String email;
+    
+    @Column(nullable = false)
+    private String password;
+    
+    @Column(nullable = false)
+    private String name;
+    
+    @Enumerated(EnumType.STRING)
+    private UserRole role;  // SPONSOR, PMO_HEAD, PM, DEVELOPER, QA, etc.
+    
+    private String department;
+    private Boolean active;
+    private LocalDateTime lastLoginAt;
+}
+```
+
+#### Project (프로젝트)
+
+```java
+@Entity
+@Table(name = "projects", schema = "project")
+public class Project extends BaseEntity {
+    @Id
+    private String id;
+    
+    @Column(nullable = false)
+    private String name;
+    
+    private String description;
+    
+    @Enumerated(EnumType.STRING)
+    private ProjectStatus status;  // PLANNING, IN_PROGRESS, ON_HOLD, COMPLETED
+    
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private BigDecimal budget;
+    private Integer progress;
+    
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    private List<Phase> phases;
+}
+```
+
+#### Task (태스크)
+
+```java
+@Entity
+@Table(name = "tasks", schema = "task")
+public class Task extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "column_id")
+    private KanbanColumn column;
+    
+    private String phaseId;
+    
+    @Column(nullable = false)
+    private String title;
+    
+    private String description;
+    private String assigneeId;
+    
+    @Enumerated(EnumType.STRING)
+    private Priority priority;      // LOW, MEDIUM, HIGH, CRITICAL
+    
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status;      // TODO, IN_PROGRESS, REVIEW, DONE
+    
+    @Enumerated(EnumType.STRING)
+    private TrackType trackType;    // AI, SI, COMMON
+    
+    private LocalDate dueDate;
+    private Integer orderNum;
+    private String tags;
+}
+```
+
+#### ChatSession / ChatMessage (채팅)
+
+```java
+@Entity
+@Table(name = "chat_sessions", schema = "chat")
+public class ChatSession extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+    
+    private String userId;
+    private String title;
+    private Boolean active;
+}
+
+@Entity
+@Table(name = "chat_messages", schema = "chat")
+public class ChatMessage extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    private ChatSession session;
+    
+    @Enumerated(EnumType.STRING)
+    private Role role;  // USER, ASSISTANT
+    
+    @Column(columnDefinition = "TEXT")
+    private String content;
+}
+```
+
+### 3.3 설정 (application.yml)
 
 ```yaml
-# application.yml
 spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  
   datasource:
     url: jdbc:postgresql://postgres:5432/pms_db
+    username: ${POSTGRES_USER:pms_user}
+    password: ${POSTGRES_PASSWORD:pms_password}
     driver-class-name: org.postgresql.Driver
+  
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         format_sql: true
+        default_schema: public
+  
   redis:
-    host: redis
-    port: 6379
-
-jwt:
-  secret: ${JWT_SECRET}
-  expiration: 86400000  # 24시간
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
 
 ai:
-  team:
-    api-url: http://llm-service:8000
+  service:
+    url: ${AI_SERVICE_URL:http://llm-service:8000}
+    model: ${AI_SERVICE_MODEL:google.gemma-3-12b-pt.Q5_K_M.gguf}
+
+jwt:
+  secret: ${JWT_SECRET:your-secret-key}
+  expiration: 86400000  # 24시간
 ```
 
-### 3. LLM Service (Flask + Python)
+---
 
-**책임**: AI 추론, RAG 검색, 문서 파싱
+## 4. 프론트엔드 (React)
 
-**아키텍처**:
+### 4.1 디렉토리 구조
+
+```
+PMS_IC_FrontEnd_v1.2/
+├── src/
+│   ├── main.tsx                 # 애플리케이션 진입점
+│   ├── app/
+│   │   ├── App.tsx              # 메인 앱 컴포넌트
+│   │   └── components/
+│   │       ├── AIAssistant.tsx        # AI 챗봇 UI
+│   │       ├── BacklogManagement.tsx  # 백로그 관리
+│   │       ├── CommonManagement.tsx   # 공통 관리
+│   │       ├── Dashboard.tsx          # 대시보드
+│   │       ├── EducationManagement.tsx# 교육 관리
+│   │       ├── Header.tsx             # 헤더
+│   │       ├── KanbanBoard.tsx        # 칸반 보드
+│   │       ├── LoginScreen.tsx        # 로그인
+│   │       ├── PhaseManagement.tsx    # 페이즈 관리
+│   │       ├── ProjectSelector.tsx    # 프로젝트 선택
+│   │       ├── RequirementManagement.tsx # 요구사항 관리
+│   │       ├── RfpManagement.tsx      # RFP 관리
+│   │       ├── RoleManagement.tsx     # 역할/권한 관리
+│   │       ├── Settings.tsx           # 설정
+│   │       ├── Sidebar.tsx            # 사이드바
+│   │       ├── TaskFormModal.tsx      # 태스크 폼
+│   │       ├── WeeklyReportManagement.tsx # 주간 보고
+│   │       └── ui/                    # 공통 UI 컴포넌트
+│   │           ├── button.tsx
+│   │           ├── card.tsx
+│   │           ├── dialog.tsx
+│   │           ├── input.tsx
+│   │           └── ...
+│   │
+│   ├── contexts/
+│   │   └── ProjectContext.tsx   # 프로젝트 상태 관리
+│   │
+│   ├── services/
+│   │   └── api.ts               # API 서비스 클래스
+│   │
+│   ├── mocks/
+│   │   ├── index.ts             # Mock 데이터
+│   │   └── dashboard.mock.ts
+│   │
+│   ├── types/
+│   │   └── project.ts           # TypeScript 타입 정의
+│   │
+│   ├── utils/
+│   │   └── status.ts            # 유틸리티 함수
+│   │
+│   └── styles/
+│       ├── index.css
+│       ├── tailwind.css
+│       └── theme.css
+│
+├── index.html
+├── vite.config.ts
+├── package.json
+└── postcss.config.mjs
+```
+
+### 4.2 API 서비스 구조
+
+```typescript
+// src/services/api.ts
+export class ApiService {
+  private token: string | null = null;
+  private useMockData = false;
+
+  // 인증 API
+  async login(email: string, password: string): Promise<LoginResponse>
+  
+  // 대시보드 API
+  async getDashboardStats(): Promise<DashboardStats>
+  async getActivities(): Promise<Activity[]>
+  
+  // 프로젝트 API
+  async getPhases(): Promise<Phase[]>
+  async updatePhase(phaseId: number, data: PhaseData): Promise<Phase>
+  
+  // 태스크 API
+  async getTaskColumns(): Promise<KanbanColumn[]>
+  async createTask(task: TaskData): Promise<Task>
+  async updateTask(taskId: number, data: TaskData): Promise<Task>
+  async moveTask(taskId: number, toColumn: string): Promise<void>
+  
+  // 이슈 API
+  async getIssues(projectId: string): Promise<Issue[]>
+  async createIssue(projectId: string, data: IssueData): Promise<Issue>
+  async updateIssueStatus(projectId: string, issueId: string, status: string): Promise<Issue>
+  
+  // 채팅 API
+  async sendChatMessage(params: ChatParams): Promise<ChatResponse>
+  
+  // 산출물 API
+  async uploadDeliverable(params: DeliverableParams): Promise<Deliverable>
+  async approveDeliverable(deliverableId: string, approved: boolean): Promise<void>
+  
+  // 교육 API
+  async getEducations(): Promise<Education[]>
+  async createEducation(data: EducationData): Promise<Education>
+  
+  // 권한 API
+  async getPermissions(): Promise<Permission[]>
+  async updateRolePermission(role: string, permissionId: string, granted: boolean): Promise<void>
+}
+```
+
+### 4.3 주요 컴포넌트 설명
+
+| 컴포넌트 | 역할 |
+|----------|------|
+| `Dashboard` | 프로젝트 현황, 진척률, 예산 사용률 표시 |
+| `KanbanBoard` | 드래그앤드롭 칸반 보드 |
+| `AIAssistant` | RAG 기반 AI 챗봇 인터페이스 |
+| `PhaseManagement` | 프로젝트 페이즈 및 게이트 관리 |
+| `BacklogManagement` | 사용자 스토리 및 백로그 관리 |
+| `RfpManagement` | RFP 요구사항 분류 및 관리 |
+
+---
+
+## 5. LLM 서비스 (Flask + LangGraph)
+
+### 5.1 서비스 구조
 
 ```
 llm-service/
-├── app.py                      # Flask 애플리케이션
-├── chat_workflow.py            # LangGraph 워크플로우
-├── rag_service_neo4j.py        # Neo4j RAG 서비스
-├── document_parser.py          # MinerU 문서 파서
-├── pdf_ocr_pipeline.py         # PDF OCR 파이프라인
-└── load_ragdata_pdfs_neo4j.py  # RAG 데이터 로더
+├── app.py                       # Flask 메인 애플리케이션
+├── chat_workflow.py             # LangGraph 워크플로우
+├── rag_service_neo4j.py         # Neo4j GraphRAG 서비스
+├── document_parser.py           # MinerU 문서 파서
+├── pdf_ocr_pipeline.py          # PDF OCR 파이프라인
+├── load_ragdata_pdfs_neo4j.py   # RAG 데이터 로더
+├── requirements.txt
+└── Dockerfile
 ```
 
-**LangGraph 워크플로우**:
+### 5.2 LangGraph 워크플로우
+
+```
+                    ┌─────────────────────┐
+                    │  classify_intent    │
+                    │    (간단한 분류)     │
+                    └──────────┬──────────┘
+                               │
+              ┌────────────────┴────────────────┐
+              │                                  │
+         casual                            uncertain
+              │                                  │
+              ▼                                  ▼
+    ┌─────────────────┐              ┌─────────────────┐
+    │ generate_response│              │   rag_search    │
+    │  (인사말 응답)    │              │  (RAG 검색)     │
+    └────────┬────────┘              └────────┬────────┘
+             │                                 │
+             │                                 ▼
+             │                     ┌─────────────────────┐
+             │                     │ verify_rag_quality  │
+             │                     │   (품질 검증)        │
+             │                     └──────────┬──────────┘
+             │                                 │
+             │                    ┌────────────┴────────────┐
+             │                    │                          │
+             │               품질 낮음                   품질 좋음
+             │                    │                          │
+             │                    ▼                          │
+             │          ┌─────────────────┐                  │
+             │          │  refine_query   │                  │
+             │          │  (쿼리 개선)     │──────────────────┤
+             │          └────────┬────────┘                  │
+             │                   │                           │
+             │                   └───────► rag_search        │
+             │                     (재검색)                   │
+             │                                               │
+             │                                               ▼
+             │                                    ┌─────────────────┐
+             │                                    │  refine_intent  │
+             │                                    │  (의도 재분류)    │
+             │                                    └────────┬────────┘
+             │                                             │
+             │                                             ▼
+             │                                  ┌─────────────────────┐
+             └─────────────────────────────────►│ generate_response   │
+                                                │   (LLM 응답 생성)    │
+                                                └──────────┬──────────┘
+                                                           │
+                                                           ▼
+                                                        [ END ]
+```
+
+### 5.3 Neo4j GraphRAG 검색
 
 ```python
-# 워크플로우 구조
-StateGraph:
-  start → classify_intent → route_by_intent
-                ↓
-        ┌───────┼───────┐
-        │       │       │
-    casual   general  pms_query
-        │       │       │
-        └───────┼───────┘
-                ↓
-        perform_rag (조건부)
-                ↓
-        generate_response
-                ↓
-        post_process
-                ↓
-              end
+# rag_service_neo4j.py
+
+class RAGServiceNeo4j:
+    """Neo4j 기반 GraphRAG 서비스 - 벡터 + 그래프 통합"""
+    
+    def __init__(self):
+        # Neo4j 연결
+        self.driver = GraphDatabase.driver(neo4j_uri, auth=(user, password))
+        
+        # 임베딩 모델: multilingual-e5-large (1024차원)
+        self.embedding_model = SentenceTransformer('intfloat/multilingual-e5-large')
+        
+        # MinerU 문서 파서 초기화
+        self.parser = MinerUDocumentParser()
+        self.chunker = LayoutAwareChunker(max_chunk_size=800, overlap=100)
+    
+    def search(self, query: str, top_k: int = 3, use_graph_expansion: bool = True):
+        """하이브리드 검색 (벡터 + 그래프 확장)"""
+        
+        # 1. 쿼리 임베딩 생성
+        query_embedding = self.embedding_model.encode(f"query: {query}")
+        
+        # 2. Neo4j 벡터 검색
+        if use_graph_expansion:
+            # GraphRAG: 벡터 검색 + 순차 컨텍스트 확장
+            cypher = """
+                CALL db.index.vector.queryNodes('chunk_embeddings', $top_k, $embedding)
+                YIELD node AS c, score
+                
+                // 순차 컨텍스트 확장
+                OPTIONAL MATCH (prev:Chunk)-[:NEXT_CHUNK]->(c)
+                OPTIONAL MATCH (c)-[:NEXT_CHUNK]->(next:Chunk)
+                
+                // 문서 정보
+                MATCH (d:Document)-[:HAS_CHUNK]->(c)
+                OPTIONAL MATCH (d)-[:BELONGS_TO]->(cat:Category)
+                
+                RETURN c.content, score, prev.content, next.content, d.title, cat.name
+            """
+        else:
+            # 단순 벡터 검색
+            cypher = """
+                CALL db.index.vector.queryNodes('chunk_embeddings', $top_k, $embedding)
+                YIELD node AS c, score
+                MATCH (d:Document)-[:HAS_CHUNK]->(c)
+                RETURN c.content, score, d.title
+            """
+        
+        return session.run(cypher, embedding=query_embedding, top_k=top_k)
 ```
 
-**RAG 파이프라인**:
+### 5.4 API 엔드포인트
 
-```
-1. 문서 입력 (PDF)
-   ↓
-2. MinerU2.5 파싱
-   - OCR 처리
-   - 레이아웃 분석
-   - 테이블/이미지 추출
-   ↓
-3. 청킹 (Chunking)
-   - 의미 단위 분할
-   - 컨텍스트 윈도우 최적화
-   ↓
-4. 임베딩 생성
-   - multilingual-e5-large
-   - 1024차원 벡터
-   ↓
-5. Neo4j 저장
-   - Document 노드
-   - Chunk 노드
-   - 관계: HAS_CHUNK, NEXT_CHUNK
-   - 벡터 인덱스 생성
-```
+| 엔드포인트 | 메서드 | 설명 |
+|------------|--------|------|
+| `/health` | GET | 헬스 체크 |
+| `/api/chat` | POST | 채팅 요청 처리 |
+| `/api/documents` | POST | 문서 추가 (RAG 인덱싱) |
+| `/api/documents/<id>` | DELETE | 문서 삭제 |
+| `/api/documents/stats` | GET | 컬렉션 통계 |
+| `/api/documents/search` | POST | 문서 검색 |
+| `/api/model/current` | GET | 현재 모델 정보 |
+| `/api/model/change` | PUT | 모델 변경 |
+| `/api/model/available` | GET | 사용 가능한 모델 목록 |
 
-**검색 전략**:
+---
 
-```python
-# 하이브리드 검색
-def search(query, top_k=3):
-    # 1. 벡터 유사도 검색
-    vector_results = neo4j.vector_search(
-        query_embedding,
-        similarity="cosine",
-        limit=top_k
-    )
+## 6. 데이터베이스 스키마
 
-    # 2. 그래프 확장 (선택적)
-    if use_graph_expansion:
-        expanded_results = expand_via_relationships(
-            vector_results,
-            max_depth=1
-        )
-
-    # 3. 재랭킹
-    reranked = rerank_by_relevance(
-        expanded_results,
-        query
-    )
-
-    return reranked[:top_k]
-```
-
-### 4. 데이터베이스
-
-#### PostgreSQL (관계형 데이터)
-
-**주요 테이블**:
+### 6.1 PostgreSQL 스키마 구조
 
 ```sql
--- 사용자 테이블
-CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    role VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- 스키마 생성 (MSA 전환 대비)
+CREATE SCHEMA IF NOT EXISTS auth;
+CREATE SCHEMA IF NOT EXISTS project;
+CREATE SCHEMA IF NOT EXISTS task;
+CREATE SCHEMA IF NOT EXISTS chat;
+CREATE SCHEMA IF NOT EXISTS risk;
+CREATE SCHEMA IF NOT EXISTS report;
 
--- 프로젝트 테이블
-CREATE TABLE projects (
-    id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    start_date DATE,
-    end_date DATE,
-    budget DECIMAL(15, 2),
-    status VARCHAR(50) NOT NULL,
-    created_by BIGINT REFERENCES users(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 리스크 테이블
-CREATE TABLE risks (
-    id BIGSERIAL PRIMARY KEY,
-    project_id BIGINT REFERENCES projects(id),
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    probability INTEGER CHECK (probability BETWEEN 1 AND 5),
-    impact INTEGER CHECK (impact BETWEEN 1 AND 5),
-    mitigation_plan TEXT,
-    status VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 채팅 세션 테이블
-CREATE TABLE chat_sessions (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT REFERENCES users(id),
-    title VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 채팅 메시지 테이블
-CREATE TABLE chat_messages (
-    id BIGSERIAL PRIMARY KEY,
-    session_id BIGINT REFERENCES chat_sessions(id),
-    role VARCHAR(20) NOT NULL,  -- 'user' or 'assistant'
-    content TEXT NOT NULL,
-    metadata JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- Extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";  -- 텍스트 검색 최적화
 ```
 
-#### Neo4j (그래프 + 벡터 데이터)
+### 6.2 ERD (Entity Relationship Diagram)
 
-**노드 및 관계**:
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              AUTH SCHEMA                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌────────────────────┐        ┌────────────────────┐                       │
+│  │       users        │        │    permissions     │                       │
+│  ├────────────────────┤        ├────────────────────┤                       │
+│  │ id (PK)           │        │ id (PK)           │                       │
+│  │ email (UNIQUE)    │        │ category          │                       │
+│  │ password          │        │ name              │                       │
+│  │ name              │        │ description       │                       │
+│  │ role              │        └────────────────────┘                       │
+│  │ department        │                 │                                    │
+│  │ active            │                 │                                    │
+│  │ last_login_at     │        ┌────────▼───────────┐                       │
+│  │ created_at        │        │  role_permissions  │                       │
+│  │ updated_at        │        ├────────────────────┤                       │
+│  └────────────────────┘        │ id (PK)           │                       │
+│                                │ role              │                       │
+│                                │ permission_id (FK)│                       │
+│                                │ granted           │                       │
+│                                └────────────────────┘                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                             PROJECT SCHEMA                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌────────────────────┐                                                     │
+│  │     projects       │                                                     │
+│  ├────────────────────┤                                                     │
+│  │ id (PK)           │◄──────────────────────────────────────┐             │
+│  │ name              │                                        │             │
+│  │ description       │     ┌────────────────────┐            │             │
+│  │ status            │     │      phases        │            │             │
+│  │ start_date        │     ├────────────────────┤            │             │
+│  │ end_date          │     │ id (PK)           │            │             │
+│  │ budget            │     │ project_id (FK)───┼────────────┘             │
+│  │ progress          │     │ name              │                           │
+│  │ created_at        │     │ order_num         │◄────────────┐             │
+│  │ updated_at        │     │ status            │             │             │
+│  └────────────────────┘     │ gate_status       │             │             │
+│           │                 │ start_date        │             │             │
+│           │                 │ end_date          │             │             │
+│           │                 │ progress          │             │             │
+│           │                 │ track_type        │             │             │
+│           │                 └────────────────────┘             │             │
+│           │                                                    │             │
+│           │     ┌────────────────────┐     ┌─────────────────┐│             │
+│           │     │      issues        │     │  deliverables   ││             │
+│           │     ├────────────────────┤     ├─────────────────┤│             │
+│           └────►│ id (PK)           │     │ id (PK)         ││             │
+│                 │ project_id (FK)   │     │ phase_id (FK)───┘│             │
+│                 │ title             │     │ name             │             │
+│                 │ description       │     │ type             │             │
+│                 │ issue_type        │     │ status           │             │
+│                 │ priority          │     │ file_path        │             │
+│                 │ status            │     │ uploaded_by      │             │
+│                 │ assignee          │     │ approved_by      │             │
+│                 │ reporter          │     │ approved_at      │             │
+│                 │ due_date          │     └─────────────────┘│             │
+│                 │ resolved_at       │                         │             │
+│                 │ resolution        │     ┌─────────────────┐│             │
+│                 └────────────────────┘     │     meetings    ││             │
+│                                           ├─────────────────┤│             │
+│                                           │ id (PK)         ││             │
+│                                           │ project_id (FK) ││             │
+│                                           │ title           ││             │
+│                                           │ date            ││             │
+│                                           │ agenda          ││             │
+│                                           │ minutes         ││             │
+│                                           │ attendees       ││             │
+│                                           └─────────────────┘│             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              TASK SCHEMA                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌────────────────────┐     ┌────────────────────┐                         │
+│  │  kanban_columns    │     │      sprints       │                         │
+│  ├────────────────────┤     ├────────────────────┤                         │
+│  │ id (PK)           │     │ id (PK)           │                         │
+│  │ project_id        │     │ project_id        │                         │
+│  │ name              │     │ name              │                         │
+│  │ order_num         │     │ start_date        │                         │
+│  │ wip_limit         │     │ end_date          │                         │
+│  └─────────┬──────────┘     │ status            │                         │
+│            │                │ goal              │                         │
+│            │                └────────────────────┘                         │
+│            │                                                               │
+│  ┌─────────▼──────────┐     ┌────────────────────┐                         │
+│  │       tasks        │     │    user_stories    │                         │
+│  ├────────────────────┤     ├────────────────────┤                         │
+│  │ id (PK)           │     │ id (PK)           │                         │
+│  │ column_id (FK)    │     │ project_id        │                         │
+│  │ phase_id          │     │ sprint_id (FK)    │                         │
+│  │ title             │     │ epic              │                         │
+│  │ description       │     │ title             │                         │
+│  │ assignee_id       │     │ description       │                         │
+│  │ priority          │     │ acceptance_criteria│                        │
+│  │ status            │     │ story_points      │                         │
+│  │ track_type        │     │ priority          │                         │
+│  │ due_date          │     │ status            │                         │
+│  │ order_num         │     │ order_num         │                         │
+│  │ tags              │     └────────────────────┘                         │
+│  │ created_at        │                                                     │
+│  │ updated_at        │                                                     │
+│  └────────────────────┘                                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              CHAT SCHEMA                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌────────────────────┐     ┌────────────────────┐                         │
+│  │   chat_sessions    │     │   chat_messages    │                         │
+│  ├────────────────────┤     ├────────────────────┤                         │
+│  │ id (PK)           │◄────┤ id (PK)           │                         │
+│  │ user_id           │     │ session_id (FK)   │                         │
+│  │ title             │     │ role              │                         │
+│  │ active            │     │ content           │                         │
+│  │ created_at        │     │ created_at        │                         │
+│  │ updated_at        │     │ updated_at        │                         │
+│  └────────────────────┘     └────────────────────┘                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 6.3 Neo4j 그래프 스키마
 
 ```cypher
-// Document 노드
-CREATE (:Document {
-    doc_id: "ragdata_project_management",
-    title: "프로젝트 관리 가이드",
-    file_name: "project_management.pdf",
-    category: "reference_document",
-    created_at: "2026-01-07T00:00:00Z"
-})
+// 노드 타입
+(:Document {doc_id, title, content, file_type, file_path, created_at})
+(:Chunk {chunk_id, content, chunk_index, title, doc_id, structure_type, 
+         has_table, has_list, section_title, page_number, embedding})
+(:Category {name})
 
-// Chunk 노드
-CREATE (:Chunk {
-    chunk_id: "chunk_001",
-    content: "프로젝트 관리는...",
-    position: 0,
-    embedding: [0.123, 0.456, ...],  // 1024차원 벡터
-    metadata: {
-        page: 1,
-        section: "Introduction"
-    }
-})
-
-// 관계
+// 관계 타입
 (:Document)-[:HAS_CHUNK]->(:Chunk)
 (:Chunk)-[:NEXT_CHUNK]->(:Chunk)
-(:Chunk)-[:RELATED_TO]->(:Chunk)
+(:Document)-[:BELONGS_TO]->(:Category)
 
 // 벡터 인덱스
 CREATE VECTOR INDEX chunk_embeddings
@@ -440,81 +813,100 @@ OPTIONS {
         `vector.similarity_function`: 'cosine'
     }
 }
-```
 
-#### Redis (캐시 + 세션)
-
-**사용 사례**:
-
-```
-1. 세션 스토어
-   Key: "session:{session_id}"
-   Value: JSON (user_id, roles, etc.)
-   TTL: 24시간
-
-2. API 응답 캐시
-   Key: "cache:project:{project_id}"
-   Value: JSON
-   TTL: 5분
-
-3. Rate Limiting
-   Key: "rate_limit:{user_id}:{endpoint}"
-   Value: Counter
-   TTL: 1분
+// 제약조건
+CREATE CONSTRAINT FOR (d:Document) REQUIRE d.doc_id IS UNIQUE
+CREATE CONSTRAINT FOR (c:Chunk) REQUIRE c.chunk_id IS UNIQUE
+CREATE CONSTRAINT FOR (cat:Category) REQUIRE cat.name IS UNIQUE
 ```
 
 ---
 
-## API 설계
+## 7. API 설계
 
-### RESTful API 규칙
+### 7.1 REST API 규칙
 
-**기본 URL**: `http://localhost:8080/api`
+- **Base URL**: `http://localhost:8083/api`
+- **인증**: `Authorization: Bearer <JWT_TOKEN>`
+- **응답 형식**: JSON
 
-**엔드포인트 네이밍**:
+### 7.2 주요 API 엔드포인트
 
-```
-리소스        메서드   엔드포인트                     설명
---------------------------------------------------------------
-인증          POST    /auth/login                   로그인
-             POST    /auth/logout                  로그아웃
-             POST    /auth/refresh                 토큰 갱신
+#### 인증 API
 
-프로젝트       GET     /projects                     목록 조회
-             POST    /projects                     생성
-             GET     /projects/{id}                상세 조회
-             PUT     /projects/{id}                수정
-             DELETE  /projects/{id}                삭제
+| 메서드 | 엔드포인트 | 설명 |
+|--------|------------|------|
+| POST | `/auth/login` | 로그인 |
+| POST | `/auth/logout` | 로그아웃 |
+| POST | `/auth/refresh` | 토큰 갱신 |
+| GET | `/users` | 사용자 목록 |
+| GET | `/permissions` | 권한 목록 |
+| PUT | `/permissions/role` | 역할 권한 수정 |
 
-리스크        GET     /projects/{id}/risks          목록 조회
-             POST    /projects/{id}/risks          생성
-             PUT     /risks/{id}                   수정
-             DELETE  /risks/{id}                   삭제
+#### 프로젝트 API
 
-채팅          GET     /chat/sessions                세션 목록
-             POST    /chat/sessions                세션 생성
-             POST    /chat/message                 메시지 전송
-             GET     /chat/sessions/{id}/messages  메시지 조회
-```
+| 메서드 | 엔드포인트 | 설명 |
+|--------|------------|------|
+| GET | `/projects` | 프로젝트 목록 |
+| POST | `/projects` | 프로젝트 생성 |
+| GET | `/projects/{id}` | 프로젝트 상세 |
+| PUT | `/projects/{id}` | 프로젝트 수정 |
+| DELETE | `/projects/{id}` | 프로젝트 삭제 |
+| GET | `/phases` | 페이즈 목록 |
+| PUT | `/phases/{id}` | 페이즈 수정 |
+| GET | `/phases/{id}/deliverables` | 산출물 목록 |
+| POST | `/phases/{id}/deliverables` | 산출물 업로드 |
 
-### API 응답 형식
+#### 태스크 API
 
-**성공 응답**:
+| 메서드 | 엔드포인트 | 설명 |
+|--------|------------|------|
+| GET | `/tasks/columns` | 칸반 컬럼 조회 |
+| POST | `/tasks` | 태스크 생성 |
+| PUT | `/tasks/{id}` | 태스크 수정 |
+| PUT | `/tasks/{id}/move` | 태스크 이동 |
+| DELETE | `/tasks/{id}` | 태스크 삭제 |
+| GET | `/stories` | 사용자 스토리 목록 |
+| POST | `/stories` | 스토리 생성 |
+
+#### 이슈 API
+
+| 메서드 | 엔드포인트 | 설명 |
+|--------|------------|------|
+| GET | `/projects/{id}/issues` | 이슈 목록 |
+| POST | `/projects/{id}/issues` | 이슈 생성 |
+| PUT | `/projects/{id}/issues/{issueId}` | 이슈 수정 |
+| PATCH | `/projects/{id}/issues/{issueId}/status` | 상태 변경 |
+| DELETE | `/projects/{id}/issues/{issueId}` | 이슈 삭제 |
+
+#### 채팅 API
+
+| 메서드 | 엔드포인트 | 설명 |
+|--------|------------|------|
+| GET | `/chat/sessions` | 세션 목록 |
+| POST | `/chat/sessions` | 세션 생성 |
+| POST | `/chat/message` | 메시지 전송 |
+| GET | `/chat/sessions/{id}/messages` | 메시지 조회 |
+| PUT | `/chat/sessions/{id}/title` | 세션 제목 변경 |
+
+### 7.3 응답 형식
+
+**성공 응답**
 
 ```json
 {
   "success": true,
   "message": "Success",
   "data": {
-    "id": 1,
-    "name": "보험 심사 프로젝트",
+    "id": "proj-001",
+    "name": "보험 심사 시스템 구축",
     "status": "IN_PROGRESS"
   },
-  "timestamp": "2026-01-07T10:30:00Z"
+  "timestamp": "2026-01-16T10:30:00Z"
 }
 ```
 
-**오류 응답**:
+**오류 응답**
 
 ```json
 {
@@ -523,31 +915,28 @@ OPTIONS {
   "error": {
     "code": "VALIDATION_ERROR",
     "details": [
-      {
-        "field": "email",
-        "message": "Invalid email format"
-      }
+      { "field": "email", "message": "Invalid email format" }
     ]
   },
-  "timestamp": "2026-01-07T10:30:00Z"
+  "timestamp": "2026-01-16T10:30:00Z"
 }
 ```
 
 ---
 
-## 보안 아키텍처
+## 8. 보안 아키텍처
 
-### 인증 흐름 (JWT)
+### 8.1 JWT 인증 흐름
 
 ```
-1. 사용자 로그인
+1. 로그인 요청
    Client → POST /api/auth/login {email, password}
 
 2. 인증 처리
-   Backend → 비밀번호 검증 (BCrypt)
+   Backend → BCrypt 비밀번호 검증
 
 3. JWT 발급
-   Backend → JWT 생성 (secret key로 서명)
+   Backend → JWT 생성
    - Header: {alg: "HS256", typ: "JWT"}
    - Payload: {sub: user_id, roles: [...], exp: ...}
    - Signature: HMACSHA256(header + payload, secret)
@@ -559,256 +948,133 @@ OPTIONS {
    Client → Authorization: Bearer {accessToken}
 
 6. 토큰 검증
-   Backend → JwtAuthenticationFilter
-   - 서명 검증
-   - 만료 시간 확인
-   - SecurityContext에 인증 정보 설정
+   JwtAuthenticationFilter → 서명/만료 검증 → SecurityContext 설정
 ```
 
-### 보안 설정
+### 8.2 역할 기반 접근 제어 (RBAC)
 
-```java
-@Configuration
-public class SecurityConfig {
+| 역할 | 설명 | 주요 권한 |
+|------|------|----------|
+| SPONSOR | 스폰서 | 예산 승인, 최종 의사결정 |
+| PMO_HEAD | PMO 책임자 | 전체 프로젝트 관리, 보고서 조회 |
+| PM | 프로젝트 관리자 | 프로젝트 생성/수정, WBS 관리 |
+| DEVELOPER | 개발자 | 태스크 작업, 백로그 관리 |
+| QA | 품질 보증 | 테스트, 이슈 등록 |
+| BUSINESS_ANALYST | 비즈니스 분석가 | 요구사항 분석, 백로그 관리 |
+| AUDITOR | 감사자 | 감사 로그 조회 |
+| ADMIN | 시스템 관리자 | 사용자/권한 관리 |
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
-        http
-            .csrf().disable()  // REST API는 CSRF 불필요
-            .sessionManagement()
-                .sessionCreationPolicy(STATELESS)  // JWT 사용
-            .and()
-            .authorizeHttpRequests()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
-            .and()
-            .addFilterBefore(jwtFilter,
-                UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
-    }
-}
-```
-
-### 환경변수 기반 시크릿 관리
+### 8.3 환경변수 기반 시크릿 관리
 
 ```bash
-# .env 파일
+# .env (git에서 제외)
 POSTGRES_PASSWORD=secure_db_password
 JWT_SECRET=long_random_256bit_key
 NEO4J_PASSWORD=secure_neo4j_password
-
-# docker-compose.yml
-environment:
-  SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-  JWT_SECRET: ${JWT_SECRET}
 ```
 
 ---
 
-## 배포 아키텍처
+## 9. 배포 및 인프라
 
-### 개발 환경
+### 9.1 Docker Compose 서비스
+
+| 서비스 | 이미지 | 포트 | 역할 |
+|--------|--------|------|------|
+| postgres | postgres:15-alpine | 5433 | 관계형 데이터베이스 |
+| redis | redis:7-alpine | 6379 | 캐시/세션 |
+| neo4j | neo4j:5.20-community | 7474, 7687 | 그래프/벡터 DB |
+| backend | Spring Boot | 8083 | API 서버 |
+| frontend | Vite Dev Server | 5173 | 웹 UI |
+| llm-service | Flask + llama-cpp | 8000 | AI 서비스 |
+| pgadmin | dpage/pgadmin4 | 5050 | DB 관리 도구 |
+| redis-commander | rediscommander | 8082 | Redis 관리 도구 |
+
+### 9.2 실행 명령어
 
 ```bash
+# 전체 서비스 시작
 docker-compose up -d
+
+# 특정 서비스만 시작
+docker-compose up -d backend frontend
+
+# 로그 확인
+docker-compose logs -f backend
+
+# 서비스 중지
+docker-compose down
+
+# 볼륨 포함 완전 삭제
+docker-compose down -v
 ```
 
-- Hot reload 지원 (Frontend: Vite, Backend: DevTools)
-- 디버깅 포트 노출
-- 상세한 로깅
+### 9.3 헬스체크
 
-### 프로덕션 환경
+| 서비스 | 헬스체크 엔드포인트 |
+|--------|---------------------|
+| Backend | `/actuator/health` |
+| LLM Service | `/health` |
+| PostgreSQL | `pg_isready` |
+| Redis | `redis-cli ping` |
+| Neo4j | `http://localhost:7474` |
 
-```bash
-docker-compose -f docker-compose.yml \
-               -f docker-compose.prod.yml up -d
-```
+### 9.4 볼륨 구성
 
-**주요 차이점**:
-
-| 항목 | 개발 | 프로덕션 |
-|------|------|----------|
-| 이미지 | 개발용 Dockerfile | 최적화된 multi-stage build |
-| 로깅 | DEBUG 레벨 | WARN/ERROR 레벨 |
-| 리소스 제한 | 없음 | CPU/메모리 제한 설정 |
-| 재시작 정책 | no | always |
-| SSL/TLS | 없음 | Nginx SSL 터미네이션 |
-| 모니터링 | 기본 | Prometheus + Grafana |
-
-### 확장 전략
-
-**수평 확장 (Scale Out)**:
-
-```bash
-# Backend 인스턴스 3개로 확장
-docker-compose up -d --scale backend=3
-
-# Nginx 로드 밸런서 설정
-upstream backend {
-    server backend_1:8080;
-    server backend_2:8080;
-    server backend_3:8080;
-}
-```
-
-**수직 확장 (Scale Up)**:
-
-```yaml
-# docker-compose.yml
-services:
-  backend:
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: 8G
-```
+| 볼륨 | 용도 |
+|------|------|
+| postgres_data | PostgreSQL 데이터 |
+| redis_data | Redis 데이터 |
+| neo4j_data | Neo4j 데이터 |
+| neo4j_logs | Neo4j 로그 |
+| backend_cache | Maven 캐시 |
 
 ---
 
-## 성능 최적화
+## 부록
 
-### 캐싱 전략
+### A. 환경 변수 목록
 
-**다층 캐싱**:
+| 변수명 | 설명 | 기본값 |
+|--------|------|--------|
+| SPRING_PROFILES_ACTIVE | Spring 프로파일 | dev |
+| POSTGRES_DB | 데이터베이스 이름 | pms_db |
+| POSTGRES_USER | DB 사용자 | pms_user |
+| POSTGRES_PASSWORD | DB 비밀번호 | pms_password |
+| JWT_SECRET | JWT 서명 키 | - |
+| AI_SERVICE_URL | LLM 서비스 URL | http://llm-service:8000 |
+| MODEL_PATH | LLM 모델 경로 | ./models/google.gemma-3-12b-pt.Q5_K_M.gguf |
+| NEO4J_URI | Neo4j 연결 URI | bolt://neo4j:7687 |
+| NEO4J_USER | Neo4j 사용자 | neo4j |
+| NEO4J_PASSWORD | Neo4j 비밀번호 | pmspassword123 |
 
-```
-1. 브라우저 캐시
-   - 정적 리소스 (JS, CSS, 이미지)
-   - Cache-Control: max-age=31536000
+### B. 포트 매핑
 
-2. Nginx 캐시
-   - API 응답 캐싱 (GET 요청)
-   - proxy_cache
+| 포트 | 서비스 | 프로토콜 |
+|------|--------|----------|
+| 5173 | Frontend | HTTP |
+| 8083 | Backend | HTTP |
+| 8000 | LLM Service | HTTP |
+| 5433 | PostgreSQL | TCP |
+| 6379 | Redis | TCP |
+| 7474 | Neo4j Browser | HTTP |
+| 7687 | Neo4j Bolt | TCP |
+| 5050 | PgAdmin | HTTP |
+| 8082 | Redis Commander | HTTP |
 
-3. Redis 캐시
-   - 자주 조회되는 데이터
-   - TTL 기반 만료
+### C. 기술 결정 사항
 
-4. JPA 2차 캐시
-   - 엔티티 캐싱
-   - Hibernate 캐시
-```
-
-### 데이터베이스 최적화
-
-```sql
--- 인덱스 설정
-CREATE INDEX idx_projects_status ON projects(status);
-CREATE INDEX idx_risks_project_id ON risks(project_id);
-CREATE INDEX idx_chat_messages_session_id
-    ON chat_messages(session_id);
-
--- 쿼리 최적화
--- N+1 문제 해결: @EntityGraph 사용
-@EntityGraph(attributePaths = {"risks", "tasks"})
-Project findByIdWithDetails(Long id);
-```
-
-### LLM 응답 최적화
-
-```python
-# 스트리밍 응답 (향후 구현)
-@app.route("/api/chat/stream", methods=["POST"])
-def chat_stream():
-    def generate():
-        for token in llm.stream(prompt):
-            yield f"data: {json.dumps({'token': token})}\n\n"
-
-    return Response(generate(), mimetype='text/event-stream')
-
-# 배치 임베딩
-embeddings = embedding_model.encode(
-    texts,
-    batch_size=32,
-    show_progress_bar=False
-)
-```
+| 항목 | 선택 | 이유 |
+|------|------|------|
+| Backend | Spring Boot 3.2 | 엔터프라이즈급 안정성, 풍부한 생태계 |
+| Frontend | React 18 + Vite | 빠른 개발, 컴포넌트 기반 |
+| LLM | Gemma 3 12B | 로컬 배포 가능, 한국어 지원 우수 |
+| RAG | Neo4j GraphRAG | 벡터 + 그래프 하이브리드 검색 |
+| Database | PostgreSQL 15 | ACID 보장, JSON 지원, 스키마 분리 |
+| Cache | Redis 7 | 고성능, 세션 관리 지원 |
+| Embedding | multilingual-e5-large | 다국어 지원, 1024차원 |
+| Workflow | LangGraph | 상태 기반 워크플로우, 유연한 라우팅 |
 
 ---
 
-## 모니터링 및 관찰성
-
-### 로깅
-
-**구조화된 로깅**:
-
-```java
-@Slf4j
-public class ProjectService {
-    public Project createProject(ProjectRequest request) {
-        log.info("Creating project: name={}, userId={}",
-            request.getName(),
-            getCurrentUserId());
-
-        try {
-            // ... 비즈니스 로직
-            log.info("Project created successfully: id={}",
-                project.getId());
-        } catch (Exception e) {
-            log.error("Failed to create project", e);
-            throw e;
-        }
-    }
-}
-```
-
-### 헬스체크
-
-```yaml
-# docker-compose.yml
-healthcheck:
-  test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-  interval: 30s
-  timeout: 10s
-  retries: 3
-  start_period: 40s
-```
-
-### 메트릭 (향후 구현)
-
-```yaml
-# Prometheus 메트릭 수집
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,metrics,prometheus
-  metrics:
-    export:
-      prometheus:
-        enabled: true
-```
-
----
-
-## 향후 개선 사항
-
-### 단기 (3개월)
-
-- [ ] WebSocket 기반 실시간 알림
-- [ ] 스트리밍 LLM 응답
-- [ ] API Rate Limiting
-- [ ] E2E 테스트 추가
-
-### 중기 (6개월)
-
-- [ ] Kubernetes 배포
-- [ ] CI/CD 파이프라인 (GitHub Actions)
-- [ ] Prometheus + Grafana 모니터링
-- [ ] 멀티테넌시 지원
-
-### 장기 (12개월)
-
-- [ ] 마이크로서비스 분리
-- [ ] Event-Driven Architecture (Kafka)
-- [ ] GraphQL API
-- [ ] 모바일 앱 (React Native)
-
----
-
-**문서 버전**: 1.0
-**최종 업데이트**: 2026-01-07
-**작성자**: PMS Insurance Claims Team
+**문서 끝**
