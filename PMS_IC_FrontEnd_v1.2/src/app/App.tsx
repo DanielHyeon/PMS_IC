@@ -11,9 +11,10 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import LoginScreen from './components/LoginScreen';
 import Settings from './components/Settings';
-import { LayoutDashboard, GitBranch, Kanban, ListTodo, Users, Settings as SettingsIcon } from 'lucide-react';
+import { LayoutDashboard, GitBranch, Kanban, ListTodo, Users, Settings as SettingsIcon, GraduationCap } from 'lucide-react';
+import EducationManagement from './components/EducationManagement';
 
-export type View = 'dashboard' | 'phases' | 'kanban' | 'backlog' | 'roles' | 'settings';
+export type View = 'dashboard' | 'phases' | 'kanban' | 'backlog' | 'roles' | 'education' | 'settings';
 
 export type UserRole = 'sponsor' | 'pmo_head' | 'pm' | 'developer' | 'qa' | 'business_analyst' | 'auditor' | 'admin';
 
@@ -46,14 +47,14 @@ export default function App() {
   // 역할별 메뉴 접근 권한
   const getAvailableMenus = (role: UserRole): View[] => {
     const menuAccess: Record<UserRole, View[]> = {
-      sponsor: ['dashboard', 'phases', 'roles', 'settings'],
-      pmo_head: ['dashboard', 'phases', 'kanban', 'backlog', 'roles', 'settings'],
-      pm: ['dashboard', 'phases', 'kanban', 'backlog', 'settings'],
-      developer: ['dashboard', 'kanban', 'backlog', 'settings'],
-      qa: ['dashboard', 'kanban', 'backlog', 'settings'],
-      business_analyst: ['dashboard', 'phases', 'backlog', 'settings'],
+      sponsor: ['dashboard', 'phases', 'roles', 'education', 'settings'],
+      pmo_head: ['dashboard', 'phases', 'kanban', 'backlog', 'roles', 'education', 'settings'],
+      pm: ['dashboard', 'phases', 'kanban', 'backlog', 'education', 'settings'],
+      developer: ['dashboard', 'kanban', 'backlog', 'education', 'settings'],
+      qa: ['dashboard', 'kanban', 'backlog', 'education', 'settings'],
+      business_analyst: ['dashboard', 'phases', 'backlog', 'education', 'settings'],
       auditor: ['dashboard', 'phases', 'roles', 'settings'],
-      admin: ['dashboard', 'phases', 'kanban', 'backlog', 'roles', 'settings'],
+      admin: ['dashboard', 'phases', 'kanban', 'backlog', 'roles', 'education', 'settings'],
     };
     return menuAccess[role] || [];
   };
@@ -64,6 +65,7 @@ export default function App() {
     { id: 'kanban' as View, label: '칸반 보드', icon: Kanban },
     { id: 'backlog' as View, label: '백로그 관리', icon: ListTodo },
     { id: 'roles' as View, label: '권한 관리', icon: Users },
+    { id: 'education' as View, label: '교육 관리', icon: GraduationCap },
     { id: 'settings' as View, label: '설정', icon: SettingsIcon },
   ];
 
@@ -85,6 +87,8 @@ export default function App() {
         return <BacklogManagement userRole={currentUser?.role || 'pm'} />;
       case 'roles':
         return <RoleManagement userRole={currentUser?.role || 'pm'} />;
+      case 'education':
+        return <EducationManagement userRole={currentUser?.role || 'pm'} />;
       case 'settings':
         return <Settings userRole={currentUser?.role || 'pm'} />;
       default:

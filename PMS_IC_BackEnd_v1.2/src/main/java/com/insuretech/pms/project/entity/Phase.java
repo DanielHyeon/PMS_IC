@@ -51,6 +51,11 @@ public class Phase extends BaseEntity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "track_type", length = 20)
+    @Builder.Default
+    private TrackType trackType = TrackType.COMMON;
+
     public enum PhaseStatus {
         NOT_STARTED,
         IN_PROGRESS,
@@ -63,5 +68,9 @@ public class Phase extends BaseEntity {
         SUBMITTED,
         APPROVED,
         REJECTED
+    }
+
+    public enum TrackType {
+        AI, SI, COMMON
     }
 }

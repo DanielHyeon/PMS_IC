@@ -504,6 +504,260 @@ export class ApiService {
     }, { message: 'Permission updated' });
   }
 
+  // ========== Meeting API ==========
+  async getMeetings(projectId: string) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/meetings`, {}, { data: [] });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async createMeeting(projectId: string, data: any) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/meetings`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: Date.now().toString() } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async updateMeeting(projectId: string, meetingId: string, data: any) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/meetings/${meetingId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: meetingId } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async deleteMeeting(projectId: string, meetingId: string) {
+    return this.fetchWithFallback(`/projects/${projectId}/meetings/${meetingId}`, {
+      method: 'DELETE',
+    }, { message: 'Meeting deleted' });
+  }
+
+  // ========== Issue API ==========
+  async getIssues(projectId: string) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/issues`, {}, { data: [] });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async createIssue(projectId: string, data: any) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/issues`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: Date.now().toString() } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async updateIssue(projectId: string, issueId: string, data: any) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/issues/${issueId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: issueId } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async updateIssueStatus(projectId: string, issueId: string, status: string) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/issues/${issueId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }, { data: { id: issueId, status } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async deleteIssue(projectId: string, issueId: string) {
+    return this.fetchWithFallback(`/projects/${projectId}/issues/${issueId}`, {
+      method: 'DELETE',
+    }, { message: 'Issue deleted' });
+  }
+
+  // ========== Education API ==========
+  async getEducations() {
+    const response = await this.fetchWithFallback('/educations', {}, { data: [] });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getEducation(educationId: string) {
+    const response = await this.fetchWithFallback(`/educations/${educationId}`, {}, { data: null });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async createEducation(data: any) {
+    const response = await this.fetchWithFallback('/educations', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: Date.now().toString() } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async updateEducation(educationId: string, data: any) {
+    const response = await this.fetchWithFallback(`/educations/${educationId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: educationId } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async deleteEducation(educationId: string) {
+    return this.fetchWithFallback(`/educations/${educationId}`, {
+      method: 'DELETE',
+    }, { message: 'Education deleted' });
+  }
+
+  // ========== Education Session API ==========
+  async getEducationSessions(educationId: string) {
+    const response = await this.fetchWithFallback(`/educations/${educationId}/sessions`, {}, { data: [] });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async createEducationSession(educationId: string, data: any) {
+    const response = await this.fetchWithFallback(`/educations/${educationId}/sessions`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: Date.now().toString() } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async updateEducationSession(educationId: string, sessionId: string, data: any) {
+    const response = await this.fetchWithFallback(`/educations/${educationId}/sessions/${sessionId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: sessionId } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async deleteEducationSession(educationId: string, sessionId: string) {
+    return this.fetchWithFallback(`/educations/${educationId}/sessions/${sessionId}`, {
+      method: 'DELETE',
+    }, { message: 'Session deleted' });
+  }
+
+  // ========== Education Roadmap API ==========
+  async getEducationRoadmaps() {
+    const response = await this.fetchWithFallback('/educations/roadmaps', {}, { data: [] });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getEducationRoadmapsByRole(role: string) {
+    const response = await this.fetchWithFallback(`/educations/roadmaps/role/${role}`, {}, { data: [] });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async createEducationRoadmap(data: any) {
+    const response = await this.fetchWithFallback('/educations/roadmaps', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: Date.now().toString() } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async updateEducationRoadmap(roadmapId: string, data: any) {
+    const response = await this.fetchWithFallback(`/educations/roadmaps/${roadmapId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: roadmapId } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async deleteEducationRoadmap(roadmapId: string) {
+    return this.fetchWithFallback(`/educations/roadmaps/${roadmapId}`, {
+      method: 'DELETE',
+    }, { message: 'Roadmap deleted' });
+  }
+
+  // ========== Education History API ==========
+  async getEducationHistoriesBySession(sessionId: string) {
+    const response = await this.fetchWithFallback(`/education-histories/session/${sessionId}`, {}, { data: [] });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getEducationHistoriesByParticipant(participantId: string) {
+    const response = await this.fetchWithFallback(`/education-histories/participant/${participantId}`, {}, { data: [] });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async registerEducationParticipant(sessionId: string, data: any) {
+    const response = await this.fetchWithFallback(`/education-histories/session/${sessionId}/register`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: Date.now().toString() } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async updateEducationHistory(historyId: string, data: any) {
+    const response = await this.fetchWithFallback(`/education-histories/${historyId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: historyId } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async cancelEducationRegistration(historyId: string) {
+    return this.fetchWithFallback(`/education-histories/${historyId}`, {
+      method: 'DELETE',
+    }, { message: 'Registration cancelled' });
+  }
+
+  // ========== Requirement API ==========
+  async getRequirements(projectId: string) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/requirements`, {}, { data: [] });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getRequirement(projectId: string, requirementId: string) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/requirements/${requirementId}`, {}, { data: null });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async createRequirement(projectId: string, data: any) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/requirements`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: Date.now().toString(), code: `REQ-${Date.now()}` } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async updateRequirement(projectId: string, requirementId: string, data: any) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/requirements/${requirementId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, { data: { ...data, id: requirementId } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async deleteRequirement(projectId: string, requirementId: string) {
+    return this.fetchWithFallback(`/projects/${projectId}/requirements/${requirementId}`, {
+      method: 'DELETE',
+    }, { message: 'Requirement deleted' });
+  }
+
+  async linkRequirementToTask(projectId: string, requirementId: string, taskId: string) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/requirements/${requirementId}/link-task`, {
+      method: 'POST',
+      body: JSON.stringify({ taskId }),
+    }, { data: { requirementId, taskId, linked: true } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async unlinkRequirementFromTask(projectId: string, requirementId: string, taskId: string) {
+    return this.fetchWithFallback(`/projects/${projectId}/requirements/${requirementId}/unlink-task/${taskId}`, {
+      method: 'DELETE',
+    }, { message: 'Task unlinked' });
+  }
+
+  // ========== RFP Auto-Classification API ==========
+  async classifyRfpRequirements(projectId: string, rfpId: string) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/rfp/${rfpId}/classify`, {
+      method: 'POST',
+    }, {
+      data: {
+        aiCount: 3,
+        siCount: 3,
+        commonCount: 2,
+        nonFunctionalCount: 2,
+        message: 'Requirements classified successfully'
+      }
+    });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
   async sendChatMessage(params: { sessionId?: string | null; message: string }) {
     // Chat API needs longer timeout for LLM response
     try {

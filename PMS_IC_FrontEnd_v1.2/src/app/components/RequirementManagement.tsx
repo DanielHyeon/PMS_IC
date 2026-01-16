@@ -87,11 +87,14 @@ const statusConfig: Record<RequirementStatus, { label: string; color: string; ic
   REJECTED: { label: '거절됨', color: 'bg-red-100 text-red-700', icon: XCircle },
 };
 
-const categoryConfig: Record<RequirementCategory, { label: string; color: string }> = {
+const categoryConfig: Record<RequirementCategory, { label: string; color: string; ratio?: string }> = {
+  AI: { label: 'AI', color: 'bg-blue-100 text-blue-700', ratio: '30%' },
+  SI: { label: 'SI', color: 'bg-green-100 text-green-700', ratio: '30%' },
+  COMMON: { label: '공통', color: 'bg-purple-100 text-purple-700', ratio: '15%' },
+  NON_FUNCTIONAL: { label: '비기능', color: 'bg-orange-100 text-orange-700', ratio: '25%' },
   FUNCTIONAL: { label: '기능', color: 'bg-blue-50 text-blue-600' },
-  NON_FUNCTIONAL: { label: '비기능', color: 'bg-purple-50 text-purple-600' },
-  TECHNICAL: { label: '기술', color: 'bg-green-50 text-green-600' },
-  BUSINESS: { label: '비즈니스', color: 'bg-orange-50 text-orange-600' },
+  TECHNICAL: { label: '기술', color: 'bg-teal-50 text-teal-600' },
+  BUSINESS: { label: '비즈니스', color: 'bg-amber-50 text-amber-600' },
   CONSTRAINT: { label: '제약사항', color: 'bg-red-50 text-red-600' },
 };
 

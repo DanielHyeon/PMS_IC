@@ -48,7 +48,7 @@ export interface Rfp {
 // 요구사항 관련 타입
 export type RequirementPriority = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
 export type RequirementStatus = 'IDENTIFIED' | 'ANALYZED' | 'APPROVED' | 'IMPLEMENTED' | 'VERIFIED' | 'DEFERRED' | 'REJECTED';
-export type RequirementCategory = 'FUNCTIONAL' | 'NON_FUNCTIONAL' | 'TECHNICAL' | 'BUSINESS' | 'CONSTRAINT';
+export type RequirementCategory = 'AI' | 'SI' | 'COMMON' | 'NON_FUNCTIONAL' | 'FUNCTIONAL' | 'TECHNICAL' | 'BUSINESS' | 'CONSTRAINT';
 
 export interface Requirement {
   id: string;
