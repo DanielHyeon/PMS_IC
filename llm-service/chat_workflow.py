@@ -18,12 +18,31 @@ except ImportError:
     except ImportError:
         RAGService = None
 
+# Response validator 임포트
+try:
+    from response_validator import ResponseValidator, ResponseFailureType
+except ImportError:
+    ResponseValidator = None
+    ResponseFailureType = None
+
+# Timeout/retry handler 임포트
+try:
+    from timeout_retry_handler import (
+        CombinedTimeoutRetry,
+        DEFAULT_GEMMA3_TIMEOUT_RETRY_CONFIG,
+        TimeoutException
+    )
+except ImportError:
+    CombinedTimeoutRetry = None
+    DEFAULT_GEMMA3_TIMEOUT_RETRY_CONFIG = None
+    TimeoutException = Exception
+
 # 설정 상수 임포트
 try:
     from config import RAG, LLM, CONFIDENCE, get_prompt
 except ImportError:
     # Fallback for standalone execution
-    RAG = type('RAG', (), {'MIN_RELEVANCE_SCORE': 0.3, 'QUALITY_THRESHOLD': 0.6, 'MAX_QUERY_RETRIES': 2, 'FUZZY_MATCH_THRESHOLD': 70, 'DEFAULT_TOP_K': 5, 'KEYWORD_MATCH_GOOD_RATIO': 0.5})()
+    RAG = type('RAG', (), {'MIN_RELEVANCE_SCORE': 0.3, 'QUALITY_THRESHOLD': 0.6, 'MAX_QUERY_RETRIES': 4, 'FUZZY_MATCH_THRESHOLD': 70, 'DEFAULT_TOP_K': 5, 'KEYWORD_MATCH_GOOD_RATIO': 0.5})()
     LLM = type('LLM', (), {'MAX_TOKENS': 8182, 'TEMPERATURE': 0.7, 'TOP_P': 0.9, 'REPEAT_PENALTY': 1.1, 'CONTEXT_MESSAGE_LIMIT': 5})()
     CONFIDENCE = type('CONFIDENCE', (), {'CASUAL': 0.95, 'PMS_QUERY': 0.70, 'GENERAL': 0.80, 'DEFAULT': 0.75, 'MAX_CONFIDENCE': 0.95, 'RAG_BOOST_PER_DOC': 0.05, 'MAX_RAG_BOOST': 0.15})()
     get_prompt = None
@@ -55,6 +74,16 @@ class ChatWorkflow:
         self.llm = llm
         self.rag_service = rag_service
         self.model_path = model_path
+
+        # Response validator 초기화
+        if ResponseValidator:
+            self.response_validator = ResponseValidator(
+                min_response_length=RAG.MIN_RESPONSE_LENGTH,
+                max_response_length=RAG.MAX_RESPONSE_LENGTH
+            )
+        else:
+            self.response_validator = None
+
         self.graph = self._build_graph()
 
     def _build_graph(self) -> StateGraph:
@@ -479,18 +508,44 @@ class ChatWorkflow:
                 # KV 캐시 초기화
                 self.llm.reset()
 
-                # LLM 추론
-                response = self.llm(
-                    prompt,
-                    max_tokens=LLM.MAX_TOKENS,
-                    temperature=LLM.TEMPERATURE,
-                    top_p=LLM.TOP_P,
-                    stop=["<end_of_turn>", "<start_of_turn>", "</s>", "<|im_end|>"],
-                    echo=False,
-                    repeat_penalty=LLM.REPEAT_PENALTY
-                )
+                # 타임아웃 + 재시도를 포함한 LLM 추론
+                def llm_inference():
+                    """LLM 추론 함수"""
+                    response = self.llm(
+                        prompt,
+                        max_tokens=LLM.MAX_TOKENS,
+                        temperature=LLM.TEMPERATURE,
+                        top_p=LLM.TOP_P,
+                        stop=["<end_of_turn>", "<start_of_turn>", "</s>", "<|im_end|>"],
+                        echo=False,
+                        repeat_penalty=LLM.REPEAT_PENALTY
+                    )
+                    return response["choices"][0]["text"].strip()
 
-                reply = response["choices"][0]["text"].strip()
+                # 타임아웃 + 재시도 핸들러 적용
+                reply = ""
+                if CombinedTimeoutRetry and DEFAULT_GEMMA3_TIMEOUT_RETRY_CONFIG:
+                    timeout_retry_handler = CombinedTimeoutRetry(DEFAULT_GEMMA3_TIMEOUT_RETRY_CONFIG)
+
+                    def on_retry_callback(attempt_num: int, delay_seconds: float):
+                        """재시도 콜백"""
+                        logger.warning(
+                            f"LLM inference timeout/retry: attempt {attempt_num}, "
+                            f"retrying in {delay_seconds:.2f}s"
+                        )
+
+                    try:
+                        reply = timeout_retry_handler.execute(
+                            llm_inference,
+                            on_retry_callback=on_retry_callback
+                        )
+                    except TimeoutException as te:
+                        logger.error(f"LLM inference timeout after all retries: {te}")
+                        state["debug_info"]["timeout_error"] = str(te)
+                        reply = "죄송합니다. 응답 생성 중 타임아웃이 발생했습니다. 다시 시도해주세요."
+                else:
+                    # 타임아웃 핸들러 없으면 직접 실행
+                    reply = llm_inference()
 
                 # 원본 응답 로깅 (디버깅용)
                 logger.info(f"Raw model response: {repr(reply)}")
@@ -500,13 +555,41 @@ class ChatWorkflow:
 
                 # 클리닝 후 응답 로깅
                 logger.info(f"Cleaned response: {repr(reply)}")
-                
+
+                # 응답 검증 (Gemma 3 안정성 향상)
+                if self.response_validator:
+                    validation_result = self.response_validator.validate(reply, message)
+                    logger.info(f"Response validation: is_valid={validation_result.is_valid}, "
+                              f"failure_type={validation_result.failure_type.value}, "
+                              f"confidence={validation_result.confidence}")
+
+                    if not validation_result.is_valid:
+                        logger.warning(f"Response validation failed: {validation_result.reason}")
+                        state["debug_info"]["response_validation_failed"] = {
+                            "failure_type": validation_result.failure_type.value,
+                            "reason": validation_result.reason,
+                            "suggested_retry": validation_result.suggested_retry,
+                            "retry_suggestion": self.response_validator.get_retry_suggestion(validation_result)
+                        }
+
+                        # 재시도 가능한 경우 쿼리 개선 후 재차 시도
+                        if validation_result.suggested_retry and state.get("retry_count", 0) < RAG.MAX_QUERY_RETRIES:
+                            logger.info(f"Attempting recovery with query refinement (retry {state.get('retry_count', 0) + 1}/{RAG.MAX_QUERY_RETRIES})")
+                            state["retry_count"] = state.get("retry_count", 0) + 1
+                            # 응답 실패 유형에 따라 쿼리 개선
+                            refined_message = self._refine_message_by_failure(message, validation_result.failure_type)
+                            state["current_query"] = refined_message
+                            # 재검색 및 재시도
+                            state = self.rag_search_node(state)
+                            # 새로운 문서로 다시 응답 생성 (재귀 호출을 피하기 위해 반환)
+                            return state
+
                 # 잘못된 모델 이름이 포함되어 있는지 추가 검증
-                wrong_names = ["니콜라스", "nicolas", "알렉스", "alex", "사라", "sara", 
+                wrong_names = ["니콜라스", "nicolas", "알렉스", "alex", "사라", "sara",
                               "gpt-4", "chatgpt", "claude", "gemini", "palm"]
                 reply_lower_check = reply.lower()
                 has_wrong_name = any(wrong in reply_lower_check for wrong in wrong_names)
-                
+
                 if has_wrong_name:
                     logger.warning(f"Detected wrong model name in response, replacing with: {correct_name}")
                     reply = f"저는 {correct_name} 모델입니다."
@@ -862,6 +945,82 @@ class ChatWorkflow:
             except FileNotFoundError:
                 logger.debug(f"Prompt file not found for '{name}', using default")
         return default
+
+    def _refine_message_by_failure(self, original_message: str, failure_type) -> str:
+        """응답 실패 유형에 따른 쿼리 개선"""
+        if not ResponseFailureType:
+            return original_message
+
+        strategies = {
+            ResponseFailureType.UNABLE_TO_ANSWER: {
+                "description": "답변 불가 - 핵심 키워드 추출 및 브로드닝",
+                "action": lambda msg: self._extract_keywords_refined(msg)
+            },
+            ResponseFailureType.INCOMPLETE_RESPONSE: {
+                "description": "불완전 응답 - 더 명확한 구조 요청",
+                "action": lambda msg: f"{msg} (상세히 설명해주세요)"
+            },
+            ResponseFailureType.REPETITIVE_RESPONSE: {
+                "description": "반복 응답 - 다른 각도로 접근",
+                "action": lambda msg: f"{msg} 다른 관점에서"
+            },
+            ResponseFailureType.TIMEOUT_CUTOFF: {
+                "description": "타임아웃 - 컨텍스트 축소",
+                "action": lambda msg: self._shorten_query(msg)
+            },
+            ResponseFailureType.MALFORMED_RESPONSE: {
+                "description": "형식 오류 - 쿼리 리포매팅",
+                "action": lambda msg: f"이 질문에 대해 설명해주세요: {msg}"
+            },
+            ResponseFailureType.EMPTY_RESPONSE: {
+                "description": "빈 응답 - 더 구체적인 질문",
+                "action": lambda msg: f"구체적으로 {msg}에 대해 설명해주세요"
+            }
+        }
+
+        strategy = strategies.get(failure_type)
+        if strategy:
+            logger.info(f"Refining query due to: {strategy['description']}")
+            refined = strategy["action"](original_message)
+            logger.info(f"Refined query: {original_message} → {refined}")
+            return refined
+
+        return original_message
+
+    def _extract_keywords_refined(self, query: str) -> str:
+        """향상된 키워드 추출 - 더 타겟팅된 검색"""
+        stopwords = {
+            "이", "가", "은", "는", "을", "를", "에", "에서", "로", "으로", "의",
+            "도", "만", "까지", "부터", "께", "에게", "한테", "와", "과", "또는",
+            "그리고", "하지만", "그러나", "따라서", "그래서", "혹은", "또한"
+        }
+
+        words = query.split()
+        keywords = []
+        for word in words:
+            clean_word = word.strip(".,!?;:()[]{}\"'").lower()
+            for suffix in ["에서", "에게", "부터", "까지", "으로", "으로써", "으로서", "과", "와", "을", "를", "이", "가", "에", "의", "도", "만", "은", "는"]:
+                if clean_word.endswith(suffix) and len(clean_word) > len(suffix):
+                    clean_word = clean_word[:-len(suffix)]
+                    break
+            if clean_word and clean_word not in stopwords and len(clean_word) > 1:
+                keywords.append(clean_word)
+
+        if keywords:
+            refined = " ".join(keywords)
+            logger.info(f"Extracted keywords: {keywords}")
+            return refined
+        return query
+
+    def _shorten_query(self, query: str) -> str:
+        """쿼리 단축 (타임아웃 방지)"""
+        words = query.split()
+        if len(words) > 5:
+            # 중요한 단어들만 유지
+            shortened = " ".join(words[:5])
+            logger.info(f"Shortened query for timeout prevention: {shortened}")
+            return shortened
+        return query
 
     def _calculate_confidence(self, intent: str, retrieved_docs: List[str]) -> float:
         """신뢰도 계산"""

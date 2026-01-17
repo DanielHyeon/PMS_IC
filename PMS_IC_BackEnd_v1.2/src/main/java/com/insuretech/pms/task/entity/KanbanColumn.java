@@ -30,6 +30,16 @@ public class KanbanColumn extends BaseEntity {
     @Column(name = "wip_limit")
     private Integer wipLimit;
 
+    @Column(name = "wip_limit_soft")
+    private Integer wipLimitSoft;
+
+    @Column(name = "wip_limit_hard")
+    private Integer wipLimitHard;
+
+    @Column(name = "is_bottleneck_column", nullable = false)
+    @Builder.Default
+    private Boolean isBottleneckColumn = false;
+
     @Column(name = "color", length = 20)
     private String color;
 }

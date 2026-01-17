@@ -45,4 +45,68 @@ public interface RequirementRepository extends JpaRepository<Requirement, String
     long countByProjectId(String projectId);
 
     long countByRfpId(String rfpId);
+
+    /**
+     * Find requirements without story points (for backlog planning)
+     *
+     * @param projectId the project ID
+     * @return list of requirements without story points
+     */
+    @Query("SELECT r FROM Requirement r WHERE r.projectId = :projectId AND r.storyPoints IS NULL")
+    List<Requirement> findRequirementsWithoutStoryPoints(@Param("projectId") String projectId);
+
+    /**
+     * Get sum of story points for all requirements
+     *
+     * @param projectId the project ID
+     * @return sum of story points
+     */
+    @Query("SELECT COALESCE(SUM(r.storyPoints), 0) FROM Requirement r WHERE r.projectId = :projectId")
+    Integer sumStoryPointsByProjectId(@Param("projectId") String projectId);
+
+    /**
+     * Find requirements with incomplete progress
+     *
+     * @param projectId the project ID
+     * @return list of requirements not completed (progress < 100%)
+     */
+    @Query("SELECT r FROM Requirement r WHERE r.projectId = :projectId AND r.progressPercentage < 100 ORDER BY r.progressPercentage ASC")
+    List<Requirement> findIncompleteRequirements(@Param("projectId") String projectId);
+
+    /**
+     * Count requirements by progress stage
+     *
+     * @param projectId the project ID
+     * @return count of requirements with progress = 0 (NOT_STARTED)
+     */
+    @Query("SELECT COUNT(r) FROM Requirement r WHERE r.projectId = :projectId AND r.progressPercentage = 0")
+    long countNotStartedRequirements(@Param("projectId") String projectId);
+
+    /**
+     * Count requirements by progress stage
+     *
+     * @param projectId the project ID
+     * @return count of requirements with progress > 0 and < 100 (IN_PROGRESS)
+     */
+    @Query("SELECT COUNT(r) FROM Requirement r WHERE r.projectId = :projectId AND r.progressPercentage > 0 AND r.progressPercentage < 100")
+    long countInProgressRequirements(@Param("projectId") String projectId);
+
+    /**
+     * Count requirements by progress stage
+     *
+     * @param projectId the project ID
+     * @return count of completed requirements (progress = 100%)
+     */
+    @Query("SELECT COUNT(r) FROM Requirement r WHERE r.projectId = :projectId AND r.progressPercentage = 100")
+    long countCompletedRequirements(@Param("projectId") String projectId);
+
+    /**
+     * Find requirements by epic
+     *
+     * @param projectId the project ID
+     * @param epic the epic name
+     * @return list of requirements in the epic
+     */
+    @Query("SELECT r FROM Requirement r WHERE r.projectId = :projectId AND r.neo4jNodeId LIKE CONCAT('%', :epic, '%')")
+    List<Requirement> findByProjectIdAndEpic(@Param("projectId") String projectId, @Param("epic") String epic);
 }

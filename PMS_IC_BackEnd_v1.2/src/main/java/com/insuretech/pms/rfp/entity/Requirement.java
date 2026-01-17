@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -78,6 +79,52 @@ public class Requirement extends BaseEntity {
     @Column(name = "actual_effort")
     private Integer actualEffort;
 
+    /**
+     * Story Points estimation (Fibonacci sequence: 1, 2, 3, 5, 8, 13, 21)
+     * Optional at creation, becomes mandatory when moving to Ready/Committed state
+     * Can be auto-suggested by LLM (requires approval)
+     * When linked to BacklogItem, value is copied (not forced synchronization)
+     */
+    @Column(name = "story_points")
+    private Integer storyPoints;
+
+    @Column(name = "estimated_effort_hours")
+    private Integer estimatedEffortHours;
+
+    @Column(name = "actual_effort_hours")
+    private Integer actualEffortHours;
+
+    @Column(name = "remaining_effort_hours")
+    private Integer remainingEffortHours;
+
+    /**
+     * Progress percentage (0-100)
+     * Primary calculation: Story Point based (when storyPoints is set)
+     * Fallback calculation: Task count based (when storyPoints is null)
+     * Time-based calculation: Optional when time tracking is enabled
+     * Updated on: status changes, storyPoints changes, linked task creation/deletion
+     */
+    @Column(name = "progress_percentage")
+    @Builder.Default
+    private Integer progressPercentage = 0;
+
+    @Column(name = "last_progress_update")
+    private LocalDateTime lastProgressUpdate;
+
+    @Transient
+    private ProgressStage progressStage;
+
+    /**
+     * Progress calculation method used for this requirement
+     * STORY_POINT: SP-based (default when SP available)
+     * TASK_COUNT: Count-based (fallback when SP unavailable)
+     * TIME_BASED: Time-based (optional, when time tracking enabled)
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "progress_calc_method", length = 50)
+    @Builder.Default
+    private ProgressCalculationMethod progressCalcMethod = ProgressCalculationMethod.STORY_POINT;
+
     @Column(name = "tenant_id", nullable = false, length = 36)
     private String tenantId;
 
@@ -109,5 +156,43 @@ public class Requirement extends BaseEntity {
 
     public void unlinkTask(String taskId) {
         linkedTaskIds.remove(taskId);
+    }
+
+    @PostLoad
+    @PostPersist
+    @PostUpdate
+    private void calculateProgressStage() {
+        if (dueDate != null && LocalDate.now().isAfter(dueDate)
+            && progressPercentage < 100) {
+            this.progressStage = ProgressStage.DELAYED;
+        } else if (progressPercentage == 0) {
+            this.progressStage = ProgressStage.NOT_STARTED;
+        } else if (progressPercentage == 100) {
+            this.progressStage = ProgressStage.COMPLETED;
+        } else {
+            this.progressStage = ProgressStage.IN_PROGRESS;
+        }
+    }
+
+    /**
+     * Progress stage enumeration - derived from progressPercentage and dueDate
+     */
+    public enum ProgressStage {
+        NOT_STARTED,
+        IN_PROGRESS,
+        COMPLETED,
+        DELAYED
+    }
+
+    /**
+     * Progress calculation method enumeration
+     * STORY_POINT: Primary method using story points (when available)
+     * TASK_COUNT: Fallback method using linked task completion count
+     * TIME_BASED: Optional time-based calculation when time tracking is enabled
+     */
+    public enum ProgressCalculationMethod {
+        STORY_POINT,
+        TASK_COUNT,
+        TIME_BASED
     }
 }

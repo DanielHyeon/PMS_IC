@@ -40,6 +40,16 @@ public class Sprint extends BaseEntity {
     @Builder.Default
     private SprintStatus status = SprintStatus.PLANNED;
 
+    @Column(name = "conwip_limit")
+    private Integer conwipLimit;
+
+    @Column(name = "enable_wip_validation", nullable = false)
+    @Builder.Default
+    private Boolean enableWipValidation = true;
+
+    @Column(name = "neo4j_node_id")
+    private String neo4jNodeId;
+
     public enum SprintStatus {
         PLANNED, ACTIVE, COMPLETED, CANCELLED
     }

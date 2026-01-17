@@ -12,10 +12,18 @@ class RAGConfig:
     """RAG search and quality configuration"""
     MIN_RELEVANCE_SCORE: float = 0.3
     QUALITY_THRESHOLD: float = 0.6
-    MAX_QUERY_RETRIES: int = 2
+    MAX_QUERY_RETRIES: int = 4  # 증가: 2 → 4 (Gemma 3 안정성 개선)
     FUZZY_MATCH_THRESHOLD: int = 70
     DEFAULT_TOP_K: int = 5
     KEYWORD_MATCH_GOOD_RATIO: float = 0.5
+
+    # Response validation thresholds
+    MIN_RESPONSE_LENGTH: int = 10
+    MAX_RESPONSE_LENGTH: int = 4000
+
+    # Timeout configuration (ms)
+    LLM_RESPONSE_TIMEOUT: int = 30000  # 30초
+    QUERY_TIMEOUT: int = 60000  # 1분
 
 
 @dataclass(frozen=True)

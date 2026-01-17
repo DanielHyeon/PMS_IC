@@ -1331,6 +1331,154 @@ export class ApiService {
       };
     }
   }
+
+  // ========== WIP Validation API ==========
+  async validateColumnWipLimit(columnId: string, allowSoftLimitExceeding: boolean = false) {
+    const response = await this.fetchWithFallback(
+      `/wip/validate/column/${columnId}?allowSoftLimitExceeding=${allowSoftLimitExceeding}`,
+      {},
+      { isValid: true, violationType: null }
+    );
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async validateSprintConwip(sprintId: string) {
+    const response = await this.fetchWithFallback(
+      `/wip/validate/sprint/${sprintId}`,
+      {},
+      { isValid: true, violationType: null }
+    );
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async validatePersonalWipLimit(assigneeId: string, maxWip: number) {
+    const response = await this.fetchWithFallback(
+      `/wip/validate/personal/${assigneeId}?maxWip=${maxWip}`,
+      {},
+      { isValid: true, violationType: null }
+    );
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getProjectWipStatus(projectId: string) {
+    const response = await this.fetchWithFallback(
+      `/wip/status/project/${projectId}`,
+      {},
+      {
+        projectId,
+        totalWip: 0,
+        columnStatuses: [],
+        bottleneckCount: 0,
+      }
+    );
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getColumnWipStatus(columnId: string) {
+    const response = await this.fetchWithFallback(
+      `/wip/status/column/${columnId}`,
+      {},
+      {
+        columnId,
+        columnName: 'Column',
+        currentWip: 0,
+        wipLimitSoft: null,
+        wipLimitHard: null,
+        isBottleneck: false,
+        health: 'GREEN',
+      }
+    );
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getSprintWipStatus(sprintId: string) {
+    const response = await this.fetchWithFallback(
+      `/wip/status/sprint/${sprintId}`,
+      {},
+      {
+        sprintId,
+        sprintName: 'Sprint',
+        currentWip: 0,
+        conwipLimit: null,
+        wipValidationEnabled: false,
+        health: 'GREEN',
+      }
+    );
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  // ========== Progress API ==========
+  async getProjectProgress(projectId: string) {
+    const response = await this.fetchWithFallback(
+      `/projects/${projectId}/progress`,
+      {},
+      []
+    );
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getRequirementProgress(requirementId: string) {
+    const response = await this.fetchWithFallback(
+      `/requirements/${requirementId}/progress`,
+      {},
+      { id: requirementId, progressPercentage: 0, progressStage: 'NOT_STARTED' }
+    );
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  // ========== Weekly Report API ==========
+  async generateProjectWeeklyReport(projectId: string, weekStartDate: string, userId: string) {
+    const response = await this.fetchWithFallback(
+      `/reports/project/${projectId}?weekStartDate=${weekStartDate}&userId=${userId}`,
+      { method: 'POST' },
+      { id: `report-${Date.now()}`, projectId, weekStartDate }
+    );
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async generateSprintWeeklyReport(sprintId: string, weekStartDate: string, userId: string) {
+    const response = await this.fetchWithFallback(
+      `/reports/sprint/${sprintId}?weekStartDate=${weekStartDate}&userId=${userId}`,
+      { method: 'POST' },
+      { id: `report-${Date.now()}`, sprintId, weekStartDate }
+    );
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getProjectWeeklyReports(projectId: string) {
+    const response = await this.fetchWithFallback(
+      `/reports/project/${projectId}`,
+      {},
+      { data: [] }
+    );
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getSprintWeeklyReports(sprintId: string) {
+    const response = await this.fetchWithFallback(
+      `/reports/sprint/${sprintId}`,
+      {},
+      { data: [] }
+    );
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getWeeklyReport(reportId: string) {
+    const response = await this.fetchWithFallback(
+      `/reports/${reportId}`,
+      {},
+      { id: reportId }
+    );
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async deleteWeeklyReport(reportId: string) {
+    return this.fetchWithFallback(
+      `/reports/${reportId}`,
+      { method: 'DELETE' },
+      { message: 'Report deleted' }
+    );
+  }
 }
 
 export const apiService = new ApiService();

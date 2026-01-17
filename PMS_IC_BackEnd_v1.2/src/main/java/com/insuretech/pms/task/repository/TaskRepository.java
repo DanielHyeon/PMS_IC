@@ -10,4 +10,8 @@ import java.util.List;
 public interface TaskRepository extends JpaRepository<Task, String> {
     List<Task> findByColumnIdOrderByOrderNumAsc(String columnId);
     List<Task> findByAssigneeId(String assigneeId);
+    List<Task> findByAssigneeIdAndStatusNot(String assigneeId, Task.TaskStatus status);
+    List<Task> findBySprintId(String sprintId);
+    int countByColumnIdAndStatusNot(String columnId, Task.TaskStatus status);
+    int countBySprintIdAndStatusNot(String sprintId, Task.TaskStatus status);
 }
