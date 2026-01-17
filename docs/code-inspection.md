@@ -1,67 +1,65 @@
 # Claude Code Skill: Automated Code Inspection & Test Protocol (Refactoring Standard)
 
-## 1. 개요 (Overview)
+## 1. Overview
 
-본 스킬은 코드의 결함을 사전에 탐지하고(Inspection), 변경 사항이 기존 기능을 파괴하지 않음을 보증하는(Testing) 체계적인 규칙을 정의합니다. 마틴 파울러의 "자가 테스트 코드" 철학을 실천하여, AI가 작성하거나 수정한 코드가 항상 '배포 가능한 상태'를 유지하도록 합니다.
-
----
-
-## 2. 코드 인스펙션 가이드라인 (Inspection Rules)
-
-클로드 코드는 코드를 수정하기 전후에 반드시 다음 항목을 점검(Checklist)합니다.
-
-### 2.1. 인지적 복잡성 및 구조 점검
-
-- **제어 흐름의 단순화**: 중첩된 `if`문이나 복잡한 `switch`문이 인지 부하를 높이는지 확인합니다. 3단계 이상의 중첩은 리팩토링 대상입니다.
-- **의존성 맵핑**: 특정 클래스나 함수가 너무 많은 외부 모듈에 의존하고 있는지(Coupling) 확인합니다. '하나의 수정이 연쇄적인 파괴'를 일으킬 가능성을 탐색합니다.
-- **책임의 소재**: 메서드가 자신이 속한 클래스의 데이터보다 다른 클래스의 데이터를 더 많이 쓰고 있는지(Feature Envy) 검사합니다.
-
-### 2.2. 코드의 구린내(Code Smells) 심층 탐지
-
-- **데이터 뭉치(Data Clumps)**: 항상 함께 몰려다니는 변수군이 있다면 이를 클래스로 묶어야 함을 경고합니다.
-- **기본 타입 집착(Primitive Obsession)**: 전화번호, 금액, 주소 등을 단순히 문자열이나 숫자로 처리하는지 확인하고 전용 객체화를 제안합니다.
-- **임시 변수 장황화**: 메서드 내에서 값을 임시로 저장하는 변수가 너무 많으면, 이를 메서드 호출로 전환(Replace Temp with Query)할 수 있는지 검사합니다.
-
-### 2.3. 인터페이스 및 명명 규칙 점검
-
-- **의도 노출(Intent Revealing)**: 함수 이름이 '어떻게(How)'가 아닌 '무엇을(What)' 하는지 명확히 나타내는지 검사합니다.
-- **매개변수 객체화**: 함수의 인자가 3개 이상일 경우, 이를 하나의 구조체나 객체로 합칠 수 있는지 확인합니다.
+This skill defines systematic rules to proactively detect code defects (Inspection) and ensure that changes do not break existing functionality (Testing). By implementing Martin Fowler's "self-testing code" philosophy, it ensures that code written or modified by AI is always "redeployable."
 
 ---
+## 2. Code Inspection Guidelines (Inspection Rules)
 
-## 3. 자가 테스트 수행 규칙 (Testing Rules)
+Claude Code always checks the following items (Checklist) before and after modifying code:
 
-리팩토링의 전제 조건은 '완벽한 테스트'입니다. 클로드 코드는 다음 규칙에 따라 테스트를 설계하고 실행합니다.
+### 2.1. Cognitive Complexity and Structure Check
 
-### 3.1. 테스트 우선 원칙 (Test-First Principle)
+- **Control Flow Simplification**: Check whether nested `if` statements or complex `switch` statements increase cognitive load. Nesting levels greater than three are a target for refactoring.
+- **Dependency Mapping**: Check whether a specific class or function depends on too many external modules (Coupling). Investigate the possibility of a "one modification causing a cascade of destruction."
+- **Location of Responsibility**: Checks whether a method uses more data from other classes than its own (Feature Envy).
 
-- **리팩토링 전**: 수정하려는 대상 코드에 대한 기존 테스트 존재 여부를 확인합니다. 테스트가 없다면, 현재 동작을 기록하는 '성격 테스트(Characterization Test)'를 먼저 작성합니다.
-- **리팩토링 중**: '미세 단계(Micro-steps)'마다 테스트를 실행합니다. 한 번의 테스트 실패는 이전 단계로의 즉각적인 롤백을 의미합니다.
+### 2.2. Deep Detection of Code Smells
 
-### 3.2. 테스트 케이스 설계 표준
+- **Data Clumps**: If a group of variables are always grouped together, warns that they should be grouped into a class.
+- **Primitive Obsession**: Checks whether phone numbers, amounts, addresses, etc. are simply treated as strings or numbers and suggests dedicated objects.
+- **Temporary Variable Verbosity**: If there are too many variables within a method that temporarily store values, check whether these can be converted into method calls (Replace Temp with Query).
 
-- **경계값 분석**: 루프의 시작과 끝, 컬렉션이 비어있을 때, 데이터가 null일 때 등 예외적인 경계 조건에 대한 테스트를 반드시 포함합니다.
-- **긍정/부정 테스트**: 정상적인 흐름(Happy Path)뿐만 아니라, 예상되는 오류 상황에서 적절한 예외가 발생하는지 검사합니다.
-- **독립성 보장**: 각 테스트는 다른 테스트에 의존해서는 안 되며, 어떤 순서로 실행해도 결과가 동일해야 합니다.
+### 2.3. Interface and Naming Convention Review
 
-### 3.3. 테스트 자동화 프로토콜
+- **Intent Revealing**: Checks whether function names clearly indicate "what" rather than "how" they do something.
+- **Parameter Objectification**: If a function has three or more arguments, check whether they can be combined into a single structure or object.
 
-- 클로드 코드는 파일 수정 시 관련 테스트 스위트를 자동으로 찾아 실행합니다.
-- 테스트 커버리지가 낮아지는 변경은 '위험 요소'로 분류하여 사용자에게 보고합니다.
+--
 
----
+## 3. Testing Rules
 
-## 4. 리팩토링-테스트 통합 워크플로우
+A prerequisite for refactoring is "perfect testing." Claude Code designs and executes tests according to the following rules.
 
-1. **검사(Inspect)**: 대상 코드에서 코드 스멜과 복잡성 레버리지를 식별합니다.
-2. **테스트 확인(Verify)**: 대상 기능을 검증할 수 있는 단위 테스트를 실행합니다.
-3. **작은 수정(Refactor)**: 기계적인 변환(함수 추출, 변수명 변경 등)을 한 번에 하나씩 적용합니다.
-4. **회귀 테스트(Regression)**: 전체 테스트를 실행하여 부수 효과가 없는지 확인합니다.
-5. **완료(Commit)**: 테스트를 통과한 경우에만 최종 코드로 확정합니다.
+### 3.1. Test-First Principle
 
----
+- **Before Refactoring**: Check for existing tests for the target code to be modified. If no tests exist, first write a "Characterization Test" that records the current behavior.
+- **During Refactoring**: Run tests at each "micro-step." A single test failure means an immediate rollback to the previous step.
 
-## 5. 예외 및 경고 사항
+### 3.2. Test Case Design Standards
 
-- **성능 최적화와의 충돌**: 가독성을 위한 리팩토링이 시스템의 임계 성능을 저해하는 경우, 인스펙션 단계에서 이를 명시하고 주석으로 이유를 남깁니다.
-- **레거시 코드**: 테스트 작성이 불가능할 정도로 꼬인 코드는 '의존성 끊기(Break Dependencies)'를 위한 최소한의 수정을 우선 제안합니다.
+- **Boundary Value Analysis**: Ensure that tests for exceptional boundary conditions, such as the beginning and end of loops, when a collection is empty, or when data is null, are included.
+- **Positive/Negative Testing**: Ensure that appropriate exceptions are raised in expected error situations, as well as the normal flow (happy path).
+- **Ensuring Independence**: Each test must not depend on others, and the results must be consistent regardless of the order in which they are run.
+
+### 3.3. Test Automation Protocol
+
+- Clod Code automatically finds and executes relevant test suites when files are modified.
+- Changes that reduce test coverage are classified as "risk factors" and reported to the user.
+
+--
+
+## 4. Refactoring-Test Integration Workflow
+
+1. **Inspect**: Identify code smells and complexity leverage in the target code.
+2. **Verify**: Run unit tests that verify the target functionality. 3. **Refactor**: Apply mechanical transformations (e.g., extracting functions, renaming variables) one at a time.
+4. **Regression**: Run all tests to ensure there are no side effects.
+5. **Commit**: Only commit code if the tests pass.
+
+--
+
+## 5. Exceptions and Warnings
+
+- **Conflicts with Performance Optimization**: If refactoring for readability degrades critical system performance, specify this during the inspection and provide a comment explaining the reason.
+- **Legacy Code**: For code that is so tangled that it's impossible to write tests, we recommend minimal modifications to "break dependencies."

@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class ProjectMemberController {
     private final ProjectMemberService projectMemberService;
 
     @Operation(summary = "Get all members of a project")
+    @PreAuthorize("@projectSecurity.isProjectMember(#projectId)")
     @GetMapping
     public ResponseEntity<ApiResponse<List<ProjectMemberDto>>> getProjectMembers(
             @PathVariable String projectId) {
@@ -31,6 +33,7 @@ public class ProjectMemberController {
     }
 
     @Operation(summary = "Get a specific project member")
+    @PreAuthorize("@projectSecurity.isProjectMember(#projectId)")
     @GetMapping("/{memberId}")
     public ResponseEntity<ApiResponse<ProjectMemberDto>> getProjectMember(
             @PathVariable String projectId,
@@ -40,6 +43,7 @@ public class ProjectMemberController {
     }
 
     @Operation(summary = "Add a member to the project")
+    @PreAuthorize("@projectSecurity.canManageMembers(#projectId)")
     @PostMapping
     public ResponseEntity<ApiResponse<ProjectMemberDto>> addProjectMember(
             @PathVariable String projectId,
@@ -50,6 +54,7 @@ public class ProjectMemberController {
     }
 
     @Operation(summary = "Update a project member's role")
+    @PreAuthorize("@projectSecurity.canManageMembers(#projectId)")
     @PutMapping("/{memberId}")
     public ResponseEntity<ApiResponse<ProjectMemberDto>> updateProjectMember(
             @PathVariable String projectId,
@@ -60,6 +65,7 @@ public class ProjectMemberController {
     }
 
     @Operation(summary = "Remove a member from the project")
+    @PreAuthorize("@projectSecurity.canManageMembers(#projectId)")
     @DeleteMapping("/{memberId}")
     public ResponseEntity<ApiResponse<Void>> removeProjectMember(
             @PathVariable String projectId,

@@ -29,6 +29,7 @@ public class ProjectController {
     }
 
     @Operation(summary = "프로젝트 상세 조회")
+    @PreAuthorize("@projectSecurity.isProjectMember(#id) or @projectSecurity.hasSystemRole('ADMIN') or @projectSecurity.hasSystemRole('AUDITOR')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ProjectDto>> getProjectById(@PathVariable String id) {
         ProjectDto project = projectService.getProjectById(id);
@@ -36,7 +37,7 @@ public class ProjectController {
     }
 
     @Operation(summary = "프로젝트 생성")
-    @PreAuthorize("hasAnyRole('PMO_HEAD', 'PM')")
+    @PreAuthorize("hasAnyRole('PMO_HEAD', 'PM', 'ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<ProjectDto>> createProject(@RequestBody ProjectDto dto) {
         ProjectDto created = projectService.createProject(dto);
@@ -45,7 +46,7 @@ public class ProjectController {
     }
 
     @Operation(summary = "프로젝트 수정")
-    @PreAuthorize("hasAnyRole('PMO_HEAD', 'PM')")
+    @PreAuthorize("@projectSecurity.hasAnyRole(#id, 'PMO_HEAD', 'PM', 'SPONSOR')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ProjectDto>> updateProject(
             @PathVariable String id,
@@ -55,7 +56,7 @@ public class ProjectController {
     }
 
     @Operation(summary = "프로젝트 삭제")
-    @PreAuthorize("hasRole('PMO_HEAD')")
+    @PreAuthorize("@projectSecurity.hasRole(#id, 'PMO_HEAD') or @projectSecurity.hasSystemRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteProject(@PathVariable String id) {
         projectService.deleteProject(id);

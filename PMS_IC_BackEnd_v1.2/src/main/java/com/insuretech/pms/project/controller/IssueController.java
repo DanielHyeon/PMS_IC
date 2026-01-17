@@ -23,12 +23,14 @@ public class IssueController {
     private final IssueService issueService;
 
     @Operation(summary = "프로젝트별 이슈 조회")
+    @PreAuthorize("@projectSecurity.isProjectMember(#projectId)")
     @GetMapping
     public ResponseEntity<ApiResponse<List<IssueDto>>> getIssues(@PathVariable String projectId) {
         return ResponseEntity.ok(ApiResponse.success(issueService.getIssuesByProject(projectId)));
     }
 
     @Operation(summary = "이슈 상세 조회")
+    @PreAuthorize("@projectSecurity.isProjectMember(#projectId)")
     @GetMapping("/{issueId}")
     public ResponseEntity<ApiResponse<IssueDto>> getIssue(
             @PathVariable String projectId,
@@ -38,7 +40,7 @@ public class IssueController {
     }
 
     @Operation(summary = "이슈 생성")
-    @PreAuthorize("hasAnyRole('PMO_HEAD', 'PM', 'DEVELOPER', 'QA')")
+    @PreAuthorize("@projectSecurity.canWorkOnIssues(#projectId)")
     @PostMapping
     public ResponseEntity<ApiResponse<IssueDto>> createIssue(
             @PathVariable String projectId,
@@ -50,7 +52,7 @@ public class IssueController {
     }
 
     @Operation(summary = "이슈 수정")
-    @PreAuthorize("hasAnyRole('PMO_HEAD', 'PM', 'DEVELOPER', 'QA')")
+    @PreAuthorize("@projectSecurity.hasAnyRole(#projectId, 'PMO_HEAD', 'PM', 'DEVELOPER', 'QA')")
     @PutMapping("/{issueId}")
     public ResponseEntity<ApiResponse<IssueDto>> updateIssue(
             @PathVariable String projectId,
@@ -62,7 +64,7 @@ public class IssueController {
     }
 
     @Operation(summary = "이슈 상태 변경")
-    @PreAuthorize("hasAnyRole('PMO_HEAD', 'PM', 'DEVELOPER', 'QA')")
+    @PreAuthorize("@projectSecurity.hasAnyRole(#projectId, 'PMO_HEAD', 'PM', 'DEVELOPER', 'QA')")
     @PatchMapping("/{issueId}/status")
     public ResponseEntity<ApiResponse<IssueDto>> updateIssueStatus(
             @PathVariable String projectId,
@@ -75,7 +77,7 @@ public class IssueController {
     }
 
     @Operation(summary = "이슈 삭제")
-    @PreAuthorize("hasAnyRole('PMO_HEAD', 'PM')")
+    @PreAuthorize("@projectSecurity.hasAnyRole(#projectId, 'PMO_HEAD', 'PM')")
     @DeleteMapping("/{issueId}")
     public ResponseEntity<ApiResponse<Void>> deleteIssue(
             @PathVariable String projectId,
