@@ -1,6 +1,7 @@
 # docker-compose.prod.yml
 # 프로덕션 환경 설정
 # 사용: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+# With OpenMetadata: docker-compose -f docker-compose.yml -f docker-compose.openmetadata.yml -f docker-compose.prod.yml up
 
 version: '3.8'
 
@@ -38,6 +39,32 @@ services:
       context: ./PMS_IC_FrontEnd_v1.2
       dockerfile: Dockerfile.prod
     restart: always
+
+  neo4j:
+    restart: always
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-change-me-in-production}
+    volumes:
+      - /var/lib/pms/neo4j/data:/data
+      - /var/lib/pms/neo4j/logs:/logs
+
+  llm-service:
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 16G
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Lineage consumer (when using OpenMetadata overlay)
+  lineage-consumer:
+    restart: always
+    environment:
+      LOG_LEVEL: WARN
 
   # 프로덕션에서는 Nginx 리버스 프록시 추가
   nginx:

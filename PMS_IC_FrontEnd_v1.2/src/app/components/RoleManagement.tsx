@@ -1489,6 +1489,7 @@ function MemberRow({ member, canManage, getRoleIcon, getRoleColor, onChangeRole,
             }}
             onBlur={() => setEditing(false)}
             autoFocus
+            aria-label={`${member.userName} 역할 변경`}
             className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="owner">프로젝트 소유자</option>

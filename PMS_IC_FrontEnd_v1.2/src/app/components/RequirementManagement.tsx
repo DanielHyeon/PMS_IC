@@ -109,6 +109,7 @@ export default function RequirementManagement({ userRole }: RequirementManagemen
   // 다이얼로그 상태
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [selectedRequirement, setSelectedRequirement] = useState<Requirement | null>(null);
 
@@ -121,6 +122,17 @@ export default function RequirementManagement({ userRole }: RequirementManagemen
     acceptanceCriteria: '',
   });
   const [isCreating, setIsCreating] = useState(false);
+
+  // 수정 폼 상태
+  const [editRequirement, setEditRequirement] = useState({
+    title: '',
+    description: '',
+    category: 'FUNCTIONAL' as RequirementCategory,
+    priority: 'MEDIUM' as RequirementPriority,
+    status: 'IDENTIFIED' as RequirementStatus,
+    acceptanceCriteria: '',
+  });
+  const [isEditing, setIsEditing] = useState(false);
 
   // 태스크 연결 상태
   const [taskIdToLink, setTaskIdToLink] = useState('');
@@ -210,6 +222,36 @@ export default function RequirementManagement({ userRole }: RequirementManagemen
   const handleOpenLinkDialog = (requirement: Requirement) => {
     setSelectedRequirement(requirement);
     setIsLinkDialogOpen(true);
+  };
+
+  // 수정 다이얼로그 열기
+  const handleOpenEditDialog = (requirement: Requirement) => {
+    setSelectedRequirement(requirement);
+    setEditRequirement({
+      title: requirement.title,
+      description: requirement.description || '',
+      category: requirement.category,
+      priority: requirement.priority,
+      status: requirement.status,
+      acceptanceCriteria: requirement.acceptanceCriteria || '',
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  // 요구사항 수정
+  const handleUpdateRequirement = async () => {
+    if (!currentProject || !selectedRequirement || !editRequirement.title.trim()) return;
+
+    setIsEditing(true);
+    try {
+      await apiService.updateRequirement(currentProject.id, selectedRequirement.id, editRequirement);
+      setIsEditDialogOpen(false);
+      await loadRequirements();
+    } catch (error) {
+      console.error('Failed to update requirement:', error);
+    } finally {
+      setIsEditing(false);
+    }
   };
 
   // 권한 체크
@@ -377,9 +419,9 @@ export default function RequirementManagement({ userRole }: RequirementManagemen
             </TableHeader>
             <TableBody>
               {filteredRequirements.map((req) => {
-                const status = statusConfig[req.status];
-                const priority = priorityConfig[req.priority];
-                const category = categoryConfig[req.category];
+                const status = statusConfig[req.status] ?? { label: req.status, color: 'bg-gray-100 text-gray-700', icon: ClipboardList };
+                const priority = priorityConfig[req.priority] ?? { label: req.priority, color: 'bg-gray-100 text-gray-700' };
+                const category = categoryConfig[req.category] ?? { label: req.category, color: 'bg-gray-100 text-gray-700' };
 
                 return (
                   <TableRow key={req.id} className="cursor-pointer hover:bg-gray-50">
@@ -428,7 +470,7 @@ export default function RequirementManagement({ userRole }: RequirementManagemen
                             상세 보기
                           </DropdownMenuItem>
                           {canEdit && (
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOpenEditDialog(req)}>
                               <Edit className="h-4 w-4 mr-2" />
                               수정
                             </DropdownMenuItem>
@@ -572,19 +614,26 @@ export default function RequirementManagement({ userRole }: RequirementManagemen
               <ChevronRight className="h-4 w-4 text-gray-400" />
               {selectedRequirement?.title}
             </DialogTitle>
+            <DialogDescription>
+              요구사항 상세 정보를 확인합니다.
+            </DialogDescription>
           </DialogHeader>
 
-          {selectedRequirement && (
+          {selectedRequirement && (() => {
+            const selCategory = categoryConfig[selectedRequirement.category] ?? { label: selectedRequirement.category, color: 'bg-gray-100 text-gray-700' };
+            const selPriority = priorityConfig[selectedRequirement.priority] ?? { label: selectedRequirement.priority, color: 'bg-gray-100 text-gray-700' };
+            const selStatus = statusConfig[selectedRequirement.status] ?? { label: selectedRequirement.status, color: 'bg-gray-100 text-gray-700' };
+            return (
             <div className="space-y-4">
               <div className="flex gap-2">
-                <Badge className={categoryConfig[selectedRequirement.category].color}>
-                  {categoryConfig[selectedRequirement.category].label}
+                <Badge className={selCategory.color}>
+                  {selCategory.label}
                 </Badge>
-                <Badge className={priorityConfig[selectedRequirement.priority].color}>
-                  {priorityConfig[selectedRequirement.priority].label}
+                <Badge className={selPriority.color}>
+                  {selPriority.label}
                 </Badge>
-                <Badge className={statusConfig[selectedRequirement.status].color}>
-                  {statusConfig[selectedRequirement.status].label}
+                <Badge className={selStatus.color}>
+                  {selStatus.label}
                 </Badge>
               </div>
 
@@ -636,7 +685,8 @@ export default function RequirementManagement({ userRole }: RequirementManagemen
                 </div>
               </div>
             </div>
-          )}
+            );
+          })()}
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
@@ -696,6 +746,132 @@ export default function RequirementManagement({ userRole }: RequirementManagemen
                 </>
               ) : (
                 '연결'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 요구사항 수정 다이얼로그 */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>요구사항 수정</DialogTitle>
+            <DialogDescription>
+              {selectedRequirement?.code} - 요구사항 정보를 수정합니다.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-title">제목 *</Label>
+              <Input
+                id="edit-title"
+                value={editRequirement.title}
+                onChange={(e) => setEditRequirement({ ...editRequirement, title: e.target.value })}
+                placeholder="요구사항 제목"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="grid gap-2">
+                <Label>분류</Label>
+                <Select
+                  value={editRequirement.category}
+                  onValueChange={(v) => setEditRequirement({ ...editRequirement, category: v as RequirementCategory })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(categoryConfig).map(([key, { label }]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>우선순위</Label>
+                <Select
+                  value={editRequirement.priority}
+                  onValueChange={(v) => setEditRequirement({ ...editRequirement, priority: v as RequirementPriority })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(priorityConfig).map(([key, { label }]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>상태</Label>
+                <Select
+                  value={editRequirement.status}
+                  onValueChange={(v) => setEditRequirement({ ...editRequirement, status: v as RequirementStatus })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(statusConfig).map(([key, { label }]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="edit-description">설명</Label>
+              <Textarea
+                id="edit-description"
+                value={editRequirement.description}
+                onChange={(e) => setEditRequirement({ ...editRequirement, description: e.target.value })}
+                placeholder="요구사항 상세 설명..."
+                rows={4}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="edit-acceptanceCriteria">인수 조건</Label>
+              <Textarea
+                id="edit-acceptanceCriteria"
+                value={editRequirement.acceptanceCriteria}
+                onChange={(e) => setEditRequirement({ ...editRequirement, acceptanceCriteria: e.target.value })}
+                placeholder="요구사항이 충족되었는지 확인할 수 있는 조건..."
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+              disabled={isEditing}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={handleUpdateRequirement}
+              disabled={!editRequirement.title.trim() || isEditing}
+            >
+              {isEditing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  저장 중...
+                </>
+              ) : (
+                '저장'
               )}
             </Button>
           </DialogFooter>

@@ -1,0 +1,5 @@
+# Lineage Consumer Dependencies
+redis>=5.0.0
+neo4j>=5.0.0
+requests>=2.31.0
+python-json-logger>=2.0.0

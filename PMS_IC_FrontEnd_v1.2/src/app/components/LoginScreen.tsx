@@ -89,6 +89,26 @@ const demoUsers: Record<string, { password: string; userInfo: UserInfo }> = {
       department: 'IT운영팀',
     },
   },
+  'dev.park@insuretech.com': {
+    password: 'password',
+    userInfo: {
+      id: 'user-dev-001',
+      name: 'Park Sungho (파트장)',
+      role: 'developer',
+      email: 'dev.park@insuretech.com',
+      department: 'Development',
+    },
+  },
+  'pm.kim@insuretech.com': {
+    password: 'password',
+    userInfo: {
+      id: 'user-pm-001',
+      name: 'Kim Minsu (PM)',
+      role: 'pm',
+      email: 'pm.kim@insuretech.com',
+      department: 'Project Management',
+    },
+  },
 };
 
 export default function LoginScreen({ onLogin }: LoginScreenProps) {

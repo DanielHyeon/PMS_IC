@@ -1,9 +1,27 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Users, Edit2, Trash2, ChevronDown, ChevronUp, UserPlus, Crown, CheckCircle, Pause, AlertCircle, GraduationCap, ClipboardCheck, BarChart3 } from 'lucide-react';
+import { Plus, Search, Users, Edit2, Trash2, ChevronDown, ChevronUp, UserPlus, Crown, CheckCircle, Pause, AlertCircle, GraduationCap, ClipboardCheck, BarChart3, Settings, Shield } from 'lucide-react';
 import { Part, PartMember, PartStatus, PART_STATUS_INFO, CreatePartDto } from '../../types/part';
 import { useProject } from '../../contexts/ProjectContext';
 import { apiService } from '../../services/api';
 import { UserRole } from '../App';
+
+// Part leader permission types
+type PartLeaderPermission = 'common:view' | 'common:edit' | 'phase:view' | 'phase:edit' | 'kanban:view' | 'kanban:edit' | 'backlog:view' | 'backlog:edit';
+
+const PART_LEADER_PERMISSIONS: { id: PartLeaderPermission; name: string; category: string }[] = [
+  { id: 'common:view', name: '공통관리 조회', category: '공통관리' },
+  { id: 'common:edit', name: '공통관리 편집', category: '공통관리' },
+  { id: 'phase:view', name: '단계 조회', category: '단계관리' },
+  { id: 'phase:edit', name: '단계 편집', category: '단계관리' },
+  { id: 'kanban:view', name: '칸반보드 조회', category: '칸반보드' },
+  { id: 'kanban:edit', name: '칸반보드 편집', category: '칸반보드' },
+  { id: 'backlog:view', name: '백로그 조회', category: '백로그' },
+  { id: 'backlog:edit', name: '백로그 편집', category: '백로그' },
+];
+
+const DEFAULT_PART_LEADER_PERMISSIONS: PartLeaderPermission[] = [
+  'common:view', 'phase:view', 'kanban:view', 'kanban:edit', 'backlog:view', 'backlog:edit'
+];
 
 interface PartManagementProps {
   userRole: UserRole;
@@ -593,6 +611,11 @@ function PartDialog({ title, projectId, part, onClose, onSubmit }: PartDialogPro
     endDate: part?.endDate || '',
   });
 
+  const [leaderPermissions, setLeaderPermissions] = useState<PartLeaderPermission[]>(
+    (part as any)?.leaderPermissions || DEFAULT_PART_LEADER_PERMISSIONS
+  );
+  const [showPermissions, setShowPermissions] = useState(false);
+
   // Mock 사용자 목록 (실제로는 API 호출)
   const availableUsers = [
     { id: 'user-003', name: '박민수' },
@@ -602,21 +625,39 @@ function PartDialog({ title, projectId, part, onClose, onSubmit }: PartDialogPro
     { id: 'user-010', name: '이상현' },
   ];
 
+  const handlePermissionToggle = (permId: PartLeaderPermission) => {
+    setLeaderPermissions(prev =>
+      prev.includes(permId)
+        ? prev.filter(p => p !== permId)
+        : [...prev, permId]
+    );
+  };
+
+  // Group permissions by category
+  const groupedPermissions = PART_LEADER_PERMISSIONS.reduce((acc, perm) => {
+    if (!acc[perm.category]) {
+      acc[perm.category] = [];
+    }
+    acc[perm.category].push(perm);
+    return acc;
+  }, {} as Record<string, typeof PART_LEADER_PERMISSIONS>);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
       projectId,
       ...formData,
+      leaderPermissions,
     });
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto py-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 my-auto">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               파트명 <span className="text-red-500">*</span>
@@ -658,6 +699,57 @@ function PartDialog({ title, projectId, part, onClose, onSubmit }: PartDialogPro
               ))}
             </select>
           </div>
+
+          {/* Part Leader Permissions Section */}
+          <div className="border border-purple-200 rounded-lg overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setShowPermissions(!showPermissions)}
+              className="w-full px-4 py-3 bg-purple-50 flex items-center justify-between hover:bg-purple-100 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Shield className="text-purple-600" size={18} />
+                <span className="font-medium text-purple-900">파트장 권한 설정</span>
+                <span className="text-xs text-purple-600 bg-purple-200 px-2 py-0.5 rounded-full">
+                  {leaderPermissions.length}개 선택
+                </span>
+              </div>
+              {showPermissions ? (
+                <ChevronUp className="text-purple-600" size={18} />
+              ) : (
+                <ChevronDown className="text-purple-600" size={18} />
+              )}
+            </button>
+
+            {showPermissions && (
+              <div className="p-4 bg-white border-t border-purple-200">
+                <p className="text-xs text-gray-500 mb-3">
+                  파트장에게 부여할 권한을 선택하세요. 선택하지 않은 권한은 파트장이 접근할 수 없습니다.
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  {Object.entries(groupedPermissions).map(([category, perms]) => (
+                    <div key={category} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                      <div className="text-xs font-semibold text-gray-700 mb-2">{category}</div>
+                      <div className="space-y-1.5">
+                        {perms.map(perm => (
+                          <label key={perm.id} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={leaderPermissions.includes(perm.id)}
+                              onChange={() => handlePermissionToggle(perm.id)}
+                              className="w-3.5 h-3.5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                            />
+                            <span className="text-xs text-gray-700">{perm.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

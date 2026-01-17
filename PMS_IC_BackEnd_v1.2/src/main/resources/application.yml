@@ -113,6 +113,17 @@ cors:
   allowed-headers: "*"
   allow-credentials: true
 
+# Lineage Event Streaming (Outbox Pattern)
+lineage:
+  outbox:
+    batch-size: 100
+    max-retries: 3
+    poll-interval: 5000  # 5 seconds
+    retry-interval: 60000  # 1 minute
+    cleanup-cron: "0 0 2 * * ?"  # Daily at 2 AM
+  stream:
+    name: lineage:events
+
 ---
 # Development Profile
 spring:
@@ -122,9 +133,15 @@ spring:
 
   jpa:
     show-sql: true
+    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
+
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
 
   devtools:
     restart:

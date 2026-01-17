@@ -11,15 +11,17 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import LoginScreen from './components/LoginScreen';
 import Settings from './components/Settings';
-import { LayoutDashboard, GitBranch, Kanban, ListTodo, Users, Settings as SettingsIcon, GraduationCap, FolderOpen, Briefcase, Network } from 'lucide-react';
+import { LayoutDashboard, GitBranch, Kanban, ListTodo, Users, Settings as SettingsIcon, GraduationCap, FolderOpen, Briefcase, Network, FileText, ClipboardList, History } from 'lucide-react';
 import EducationManagement from './components/EducationManagement';
 import CommonManagement from './components/CommonManagement';
 import ProjectManagement from './components/ProjectManagement';
 import PartManagement from './components/PartManagement';
+import RfpManagement from './components/RfpManagement';
+import RequirementManagement from './components/RequirementManagement';
+import { LineageManagement } from './components/lineage';
 import { ProjectProvider } from '../contexts/ProjectContext';
-import { AuthProvider, useAuth } from '../contexts/AuthContext';
 
-export type View = 'dashboard' | 'projects' | 'parts' | 'phases' | 'kanban' | 'backlog' | 'roles' | 'common' | 'education' | 'settings';
+export type View = 'dashboard' | 'projects' | 'parts' | 'rfp' | 'requirements' | 'lineage' | 'phases' | 'kanban' | 'backlog' | 'roles' | 'common' | 'education' | 'settings';
 
 export type UserRole = 'sponsor' | 'pmo_head' | 'pm' | 'developer' | 'qa' | 'business_analyst' | 'auditor' | 'admin';
 
@@ -52,14 +54,14 @@ export default function App() {
   // 역할별 메뉴 접근 권한
   const getAvailableMenus = (role: UserRole): View[] => {
     const menuAccess: Record<UserRole, View[]> = {
-      sponsor: ['dashboard', 'phases', 'roles', 'common', 'education', 'settings'],
-      pmo_head: ['dashboard', 'projects', 'parts', 'phases', 'kanban', 'backlog', 'roles', 'common', 'education', 'settings'],
-      pm: ['dashboard', 'projects', 'parts', 'phases', 'kanban', 'backlog', 'common', 'education', 'settings'],
-      developer: ['dashboard', 'kanban', 'backlog', 'education', 'settings'],
-      qa: ['dashboard', 'kanban', 'backlog', 'education', 'settings'],
-      business_analyst: ['dashboard', 'phases', 'backlog', 'education', 'settings'],
-      auditor: ['dashboard', 'phases', 'roles', 'settings'],
-      admin: ['dashboard', 'projects', 'parts', 'phases', 'kanban', 'backlog', 'roles', 'common', 'education', 'settings'],
+      sponsor: ['dashboard', 'rfp', 'requirements', 'lineage', 'phases', 'roles', 'common', 'education', 'settings'],
+      pmo_head: ['dashboard', 'projects', 'parts', 'rfp', 'requirements', 'lineage', 'phases', 'kanban', 'backlog', 'roles', 'common', 'education', 'settings'],
+      pm: ['dashboard', 'projects', 'parts', 'rfp', 'requirements', 'lineage', 'phases', 'kanban', 'backlog', 'common', 'education', 'settings'],
+      developer: ['dashboard', 'requirements', 'lineage', 'kanban', 'backlog', 'education', 'settings'],
+      qa: ['dashboard', 'requirements', 'lineage', 'kanban', 'backlog', 'education', 'settings'],
+      business_analyst: ['dashboard', 'rfp', 'requirements', 'lineage', 'phases', 'backlog', 'education', 'settings'],
+      auditor: ['dashboard', 'requirements', 'lineage', 'phases', 'roles', 'settings'],
+      admin: ['dashboard', 'projects', 'parts', 'rfp', 'requirements', 'lineage', 'phases', 'kanban', 'backlog', 'roles', 'common', 'education', 'settings'],
     };
     return menuAccess[role] || [];
   };
@@ -68,6 +70,9 @@ export default function App() {
     { id: 'dashboard' as View, label: '통합 대시보드', icon: LayoutDashboard },
     { id: 'projects' as View, label: '프로젝트 관리', icon: Briefcase },
     { id: 'parts' as View, label: '파트 관리', icon: Network },
+    { id: 'rfp' as View, label: 'RFP 관리', icon: FileText },
+    { id: 'requirements' as View, label: '요구사항 관리', icon: ClipboardList },
+    { id: 'lineage' as View, label: 'Lineage & History', icon: History },
     { id: 'phases' as View, label: '단계별 관리', icon: GitBranch },
     { id: 'kanban' as View, label: '칸반 보드', icon: Kanban },
     { id: 'backlog' as View, label: '백로그 관리', icon: ListTodo },
@@ -91,6 +96,12 @@ export default function App() {
         return <ProjectManagement userRole={currentUser?.role || 'pm'} />;
       case 'parts':
         return <PartManagement userRole={currentUser?.role || 'pm'} />;
+      case 'rfp':
+        return <RfpManagement userRole={currentUser?.role || 'pm'} />;
+      case 'requirements':
+        return <RequirementManagement userRole={currentUser?.role || 'pm'} />;
+      case 'lineage':
+        return <LineageManagement userRole={currentUser?.role || 'pm'} />;
       case 'phases':
         return <PhaseManagement userRole={currentUser?.role || 'pm'} />;
       case 'kanban':

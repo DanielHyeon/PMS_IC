@@ -3,6 +3,7 @@ package com.insuretech.pms.task.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.insuretech.pms.lineage.service.LineageEventProducer;
 import com.insuretech.pms.task.dto.CreateUserStoryRequest;
 import com.insuretech.pms.task.dto.ReorderUserStoryRequest;
 import com.insuretech.pms.task.dto.UpdateUserStoryRequest;
@@ -27,6 +28,7 @@ public class UserStoryService {
     private final UserStoryRepository userStoryRepository;
     private final SprintRepository sprintRepository;
     private final ObjectMapper objectMapper;
+    private final LineageEventProducer lineageEventProducer;
 
     public List<UserStoryResponse> getAllStories(String projectId) {
         List<UserStory> stories = userStoryRepository.findByProjectIdOrderByPriorityOrderAsc(projectId);
@@ -68,6 +70,11 @@ public class UserStoryService {
                 .build();
 
         UserStory saved = userStoryRepository.save(story);
+
+        // Publish lineage event
+        lineageEventProducer.publishStoryCreated(
+                saved.getId(), request.getProjectId(), saved.getTitle(), saved.getStoryPoints());
+
         return toResponse(saved);
     }
 
@@ -110,7 +117,13 @@ public class UserStoryService {
     }
 
     public void deleteStory(String id) {
+        UserStory story = userStoryRepository.findById(id).orElse(null);
         userStoryRepository.deleteById(id);
+
+        // Publish lineage event
+        if (story != null) {
+            lineageEventProducer.publishStoryDeleted(id, story.getProjectId());
+        }
     }
 
     public void reorderStory(ReorderUserStoryRequest request) {

@@ -9,7 +9,7 @@ interface UserStory {
   description: string;
   priority: number;
   storyPoints?: number;
-  status: 'backlog' | 'sprint' | 'done';
+  status: 'BACKLOG' | 'SELECTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   assignee?: string;
   epic: string;
   acceptanceCriteria: string[];
@@ -22,7 +22,7 @@ const initialStories: UserStory[] = [
     description: '영수증 OCR 기능 구현',
     priority: 1,
     storyPoints: 8,
-    status: 'sprint',
+    status: 'SELECTED',
     assignee: '이영희',
     epic: 'OCR 엔진',
     acceptanceCriteria: [
@@ -37,7 +37,7 @@ const initialStories: UserStory[] = [
     description: 'AI 설명 가능성(XAI) 기능 구현',
     priority: 2,
     storyPoints: 13,
-    status: 'backlog',
+    status: 'BACKLOG',
     epic: 'AI 모델',
     acceptanceCriteria: [
       'AI 판단의 주요 근거(약관 조항, 유사 판례 등) 제공',
@@ -51,7 +51,7 @@ const initialStories: UserStory[] = [
     description: '모델 성능 대시보드 구축',
     priority: 3,
     storyPoints: 5,
-    status: 'done',
+    status: 'COMPLETED',
     assignee: '박민수',
     epic: '인프라',
     acceptanceCriteria: [
@@ -66,7 +66,7 @@ const initialStories: UserStory[] = [
     description: '데이터 라벨링 도구 개발',
     priority: 4,
     storyPoints: 8,
-    status: 'backlog',
+    status: 'BACKLOG',
     epic: '데이터 관리',
     acceptanceCriteria: [
       '이미지 및 텍스트 데이터 라벨링 UI',
@@ -80,7 +80,7 @@ const initialStories: UserStory[] = [
     description: '진단서 자동 분류 기능',
     priority: 5,
     storyPoints: 13,
-    status: 'backlog',
+    status: 'BACKLOG',
     epic: 'OCR 엔진',
     acceptanceCriteria: [
       '진단서 이미지에서 질병명 자동 추출',
@@ -94,7 +94,7 @@ const initialStories: UserStory[] = [
     description: '유사 케이스 검색 엔진',
     priority: 6,
     storyPoints: 8,
-    status: 'backlog',
+    status: 'BACKLOG',
     epic: 'AI 모델',
     acceptanceCriteria: [
       '의미 기반 검색(Semantic Search) 기능',
@@ -230,9 +230,9 @@ export default function BacklogManagement({ userRole }: { userRole: UserRole }) 
   const moveToSprint = async (storyId: number) => {
     if (!canEdit) return;
     try {
-      await apiService.updateStory(storyId, { status: 'sprint' });
+      await apiService.updateStory(storyId, { status: 'SELECTED' });
       setStories((prev) =>
-        prev.map((s) => (s.id === storyId ? { ...s, status: 'sprint' } : s))
+        prev.map((s) => (s.id === storyId ? { ...s, status: 'SELECTED' } : s))
       );
     } catch (error) {
       console.error('Failed to move to sprint:', error);
@@ -242,9 +242,9 @@ export default function BacklogManagement({ userRole }: { userRole: UserRole }) 
   const removeFromSprint = async (storyId: number) => {
     if (!canEdit) return;
     try {
-      await apiService.updateStory(storyId, { status: 'backlog' });
+      await apiService.updateStory(storyId, { status: 'BACKLOG' });
       setStories((prev) =>
-        prev.map((s) => (s.id === storyId ? { ...s, status: 'backlog' } : s))
+        prev.map((s) => (s.id === storyId ? { ...s, status: 'BACKLOG' } : s))
       );
     } catch (error) {
       console.error('Failed to remove from sprint:', error);
@@ -256,9 +256,9 @@ export default function BacklogManagement({ userRole }: { userRole: UserRole }) 
     ? stories
     : stories.filter((s) => s.epic === selectedEpicFilter);
 
-  const backlogStories = filteredStories.filter((s) => s.status === 'backlog').sort((a, b) => a.priority - b.priority);
-  const sprintStories = filteredStories.filter((s) => s.status === 'sprint');
-  const doneStories = filteredStories.filter((s) => s.status === 'done');
+  const backlogStories = filteredStories.filter((s) => s.status === 'BACKLOG').sort((a, b) => a.priority - b.priority);
+  const sprintStories = filteredStories.filter((s) => s.status === 'SELECTED');
+  const doneStories = filteredStories.filter((s) => s.status === 'COMPLETED');
 
   return (
     <div className="p-6">

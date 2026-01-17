@@ -204,11 +204,13 @@ export class ApiService {
 
   // ========== Part (Sub-Project) API ==========
   async getParts(projectId: string) {
-    return this.fetchWithFallback(`/projects/${projectId}/parts`, {}, []);
+    const response = await this.fetchWithFallback(`/projects/${projectId}/parts`, {}, { data: [] });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
   }
 
   async getPart(partId: string) {
-    return this.fetchWithFallback(`/parts/${partId}`, {}, null);
+    const response = await this.fetchWithFallback(`/parts/${partId}`, {}, { data: null });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
   }
 
   async createPart(projectId: string, data: any) {
@@ -241,7 +243,8 @@ export class ApiService {
   }
 
   async getPartMembers(partId: string) {
-    return this.fetchWithFallback(`/parts/${partId}/members`, {}, []);
+    const response = await this.fetchWithFallback(`/parts/${partId}/members`, {}, { data: [] });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
   }
 
   async addPartMember(partId: string, userId: string) {
@@ -259,7 +262,11 @@ export class ApiService {
 
   // ========== Project Members API ==========
   async getProjectMembers(projectId: string) {
-    return this.fetchWithFallback(`/projects/${projectId}/members`, {}, []);
+    const response = await this.fetchWithFallback(`/projects/${projectId}/members`, {}, []);
+    if (response && typeof response === 'object' && 'data' in response && Array.isArray((response as any).data)) {
+      return (response as any).data;
+    }
+    return Array.isArray(response) ? response : [];
   }
 
   async addProjectMember(projectId: string, userId: string, role: string) {
@@ -651,88 +658,91 @@ export class ApiService {
 
   // ========== User Management API (Admin) ==========
   async getUsers() {
-    return this.fetchWithFallback('/users', {}, [
-      {
-        id: 'user-001',
-        name: '김철수',
-        email: 'kim@example.com',
-        department: 'IT기획팀',
-        systemRole: 'user',
-        legacyRole: 'pm',
-        status: 'active',
-        createdAt: '2024-01-15',
-      },
-      {
-        id: 'user-002',
-        name: '이영희',
-        email: 'lee@example.com',
-        department: '경영지원팀',
-        systemRole: 'user',
-        legacyRole: 'sponsor',
-        status: 'active',
-        createdAt: '2024-01-15',
-      },
-      {
-        id: 'user-003',
-        name: '박민수',
-        email: 'park@example.com',
-        department: 'PMO',
-        systemRole: 'pmo',
-        legacyRole: 'pmo_head',
-        status: 'active',
-        createdAt: '2024-02-01',
-      },
-      {
-        id: 'user-004',
-        name: '최영수',
-        email: 'choi@example.com',
-        department: '개발팀',
-        systemRole: 'user',
-        legacyRole: 'developer',
-        status: 'active',
-        createdAt: '2024-03-01',
-      },
-      {
-        id: 'user-005',
-        name: '정수진',
-        email: 'jung@example.com',
-        department: 'QA팀',
-        systemRole: 'user',
-        legacyRole: 'qa',
-        status: 'active',
-        createdAt: '2024-03-15',
-      },
-      {
-        id: 'user-006',
-        name: '한미영',
-        email: 'han@example.com',
-        department: '현업팀',
-        systemRole: 'user',
-        legacyRole: 'business_analyst',
-        status: 'active',
-        createdAt: '2024-04-01',
-      },
-      {
-        id: 'user-007',
-        name: '오현우',
-        email: 'oh@example.com',
-        department: '감사팀',
-        systemRole: 'user',
-        legacyRole: 'auditor',
-        status: 'active',
-        createdAt: '2024-04-15',
-      },
-      {
-        id: 'user-admin',
-        name: '관리자',
-        email: 'admin@example.com',
-        department: 'IT운영팀',
-        systemRole: 'admin',
-        legacyRole: 'admin',
-        status: 'active',
-        createdAt: '2024-01-01',
-      },
-    ]);
+    const response = await this.fetchWithFallback('/users', {}, {
+      data: [
+        {
+          id: 'user-001',
+          name: '김철수',
+          email: 'kim@example.com',
+          department: 'IT기획팀',
+          systemRole: 'user',
+          legacyRole: 'pm',
+          status: 'active',
+          createdAt: '2024-01-15',
+        },
+        {
+          id: 'user-002',
+          name: '이영희',
+          email: 'lee@example.com',
+          department: '경영지원팀',
+          systemRole: 'user',
+          legacyRole: 'sponsor',
+          status: 'active',
+          createdAt: '2024-01-15',
+        },
+        {
+          id: 'user-003',
+          name: '박민수',
+          email: 'park@example.com',
+          department: 'PMO',
+          systemRole: 'pmo',
+          legacyRole: 'pmo_head',
+          status: 'active',
+          createdAt: '2024-02-01',
+        },
+        {
+          id: 'user-004',
+          name: '최영수',
+          email: 'choi@example.com',
+          department: '개발팀',
+          systemRole: 'user',
+          legacyRole: 'developer',
+          status: 'active',
+          createdAt: '2024-03-01',
+        },
+        {
+          id: 'user-005',
+          name: '정수진',
+          email: 'jung@example.com',
+          department: 'QA팀',
+          systemRole: 'user',
+          legacyRole: 'qa',
+          status: 'active',
+          createdAt: '2024-03-15',
+        },
+        {
+          id: 'user-006',
+          name: '한미영',
+          email: 'han@example.com',
+          department: '현업팀',
+          systemRole: 'user',
+          legacyRole: 'business_analyst',
+          status: 'active',
+          createdAt: '2024-04-01',
+        },
+        {
+          id: 'user-007',
+          name: '오현우',
+          email: 'oh@example.com',
+          department: '감사팀',
+          systemRole: 'user',
+          legacyRole: 'auditor',
+          status: 'active',
+          createdAt: '2024-04-15',
+        },
+        {
+          id: 'user-admin',
+          name: '관리자',
+          email: 'admin@example.com',
+          department: 'IT운영팀',
+          systemRole: 'admin',
+          legacyRole: 'admin',
+          status: 'active',
+          createdAt: '2024-01-01',
+        },
+      ],
+    });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
   }
 
   async getUser(userId: string) {
@@ -1045,6 +1055,108 @@ export class ApiService {
     }, { message: 'Task unlinked' });
   }
 
+  // ========== RFP CRUD API ==========
+  async getRfps(projectId: string) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/rfps`, {}, { data: [] });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getRfp(projectId: string, rfpId: string) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/rfps/${rfpId}`, {}, { data: null });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async createRfp(projectId: string, data: { title: string; content?: string; status: string; processingStatus: string }) {
+    const rfpId = `rfp-${Date.now()}`;
+    const response = await this.fetchWithFallback(`/projects/${projectId}/rfps`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, {
+      data: {
+        id: rfpId,
+        projectId,
+        ...data,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+    });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async updateRfp(projectId: string, rfpId: string, data: Partial<{ title: string; content: string; status: string }>) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/rfps/${rfpId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, { data: { id: rfpId, ...data, updatedAt: new Date().toISOString() } });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async deleteRfp(projectId: string, rfpId: string) {
+    return this.fetchWithFallback(`/projects/${projectId}/rfps/${rfpId}`, {
+      method: 'DELETE',
+    }, { message: 'RFP deleted' });
+  }
+
+  async uploadRfpFile(projectId: string, file: File, title?: string) {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (title) formData.append('title', title);
+
+    try {
+      const headers: HeadersInit = {};
+      if (this.token) headers.Authorization = `Bearer ${this.token}`;
+
+      const response = await fetch(`${API_BASE_URL}/projects/${projectId}/rfps/upload`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      return data && typeof data === 'object' && 'data' in data ? data.data : data;
+    } catch (error) {
+      console.warn('RFP upload failed, using mock:', error);
+      return {
+        id: `rfp-${Date.now()}`,
+        projectId,
+        title: title || file.name.replace(/\.[^/.]+$/, ''),
+        fileName: file.name,
+        fileSize: file.size,
+        status: 'DRAFT',
+        processingStatus: 'PENDING',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
+  }
+
+  async extractRequirements(projectId: string, rfpId: string, content?: string) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/rfps/${rfpId}/extract`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    }, {
+      data: {
+        rfpId,
+        status: 'EXTRACTING',
+        message: 'Requirement extraction started',
+      }
+    });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  async getRfpProcessingStatus(projectId: string, rfpId: string) {
+    const response = await this.fetchWithFallback(`/projects/${projectId}/rfps/${rfpId}/status`, {}, {
+      data: {
+        rfpId,
+        status: 'COMPLETED',
+        requirementCount: 10,
+        processingTime: '2m 30s',
+      }
+    });
+    return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
   // ========== RFP Auto-Classification API ==========
   async classifyRfpRequirements(projectId: string, rfpId: string) {
     const response = await this.fetchWithFallback(`/projects/${projectId}/rfp/${rfpId}/classify`, {
@@ -1059,6 +1171,114 @@ export class ApiService {
       }
     });
     return response && typeof response === 'object' && 'data' in response ? (response as any).data : response;
+  }
+
+  // ========== Lineage API ==========
+  async getLineageGraph(projectId: string) {
+    const response = await this.fetchWithFallback(`/lineage/graph/${projectId}`, {}, {
+      nodes: [],
+      edges: [],
+      statistics: {
+        requirements: 0,
+        stories: 0,
+        tasks: 0,
+        sprints: 0,
+        coverage: 0,
+        linkedRequirements: 0,
+        unlinkedRequirements: 0,
+      },
+    });
+    return response;
+  }
+
+  async getLineageTimeline(
+    projectId: string,
+    params?: {
+      aggregateType?: string;
+      since?: string;
+      until?: string;
+      userId?: string;
+      page?: number;
+      size?: number;
+    }
+  ) {
+    const queryParams = new URLSearchParams();
+    if (params?.aggregateType) queryParams.append('aggregateType', params.aggregateType);
+    if (params?.since) queryParams.append('since', params.since);
+    if (params?.until) queryParams.append('until', params.until);
+    if (params?.userId) queryParams.append('userId', params.userId);
+    if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+    if (params?.size !== undefined) queryParams.append('size', params.size.toString());
+
+    const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
+
+    const response = await this.fetchWithFallback(`/lineage/timeline/${projectId}${query}`, {}, {
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      number: 0,
+      size: 20,
+    });
+    return response;
+  }
+
+  async getEntityHistory(aggregateType: string, aggregateId: string) {
+    const response = await this.fetchWithFallback(
+      `/lineage/history/${aggregateType}/${aggregateId}`,
+      {},
+      []
+    );
+    return response;
+  }
+
+  async getLineageUpstream(aggregateType: string, aggregateId: string, depth: number = 3) {
+    const response = await this.fetchWithFallback(
+      `/lineage/upstream/${aggregateType}/${aggregateId}?depth=${depth}`,
+      {},
+      { nodes: [], edges: [], maxDepth: 0, totalNodes: 0 }
+    );
+    return response;
+  }
+
+  async getLineageDownstream(aggregateType: string, aggregateId: string, depth: number = 3) {
+    const response = await this.fetchWithFallback(
+      `/lineage/downstream/${aggregateType}/${aggregateId}?depth=${depth}`,
+      {},
+      { nodes: [], edges: [], maxDepth: 0, totalNodes: 0 }
+    );
+    return response;
+  }
+
+  async getImpactAnalysis(aggregateType: string, aggregateId: string) {
+    const response = await this.fetchWithFallback(
+      `/lineage/impact/${aggregateType}/${aggregateId}`,
+      {},
+      {
+        sourceId: aggregateId,
+        sourceType: aggregateType,
+        sourceTitle: '',
+        impactedStories: 0,
+        impactedTasks: 0,
+        impactedSprints: 0,
+        directImpacts: [],
+        indirectImpacts: [],
+        affectedSprintNames: [],
+      }
+    );
+    return response;
+  }
+
+  async getLineageStatistics(projectId: string) {
+    const response = await this.fetchWithFallback(`/lineage/statistics/${projectId}`, {}, {
+      requirements: 0,
+      stories: 0,
+      tasks: 0,
+      sprints: 0,
+      coverage: 0,
+      linkedRequirements: 0,
+      unlinkedRequirements: 0,
+    });
+    return response;
   }
 
   async sendChatMessage(params: { sessionId?: string | null; message: string }) {
